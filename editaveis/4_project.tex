@@ -45,17 +45,10 @@ Dividimos a implementação da Arquitetura Kappa em três etapas:
     mensagens no Kafka e sendo possível seu processamento no Spark; e
 (iii) disponibilização de \textit{hooks} que possam ser estendidos futuramente,
     possibilitando a criação de um \textit{pipeline de dados} customizável.
-
 Durante a implementação do novo serviço de processamento de dados para o
 InterSCity desenvolvemos o \textbf{Shock}, responsável por abstrair as
-comunicações entre as diferentes
-ferramentas e trazer a extensibilidade mencionada na terceira etapa da
-implementação. Apresentamos no Apêndice \ref{appendix:impl}
-pseudo algoritmos que ilustram o uso das ferramentas escolhidas na
-implementação da Arquitetura Lambda\footnote{
-Pseudo códigos para a Arquitetura Lambda foram disponibilizados como forma
-de complemento, pois o Shock já contempla a Arquitetura Kappa.
-}.
+comunicações entre as diferentes ferramentas e trazer a extensibilidade mencionada
+na terceira etapa da implementação.
 
 \begin{figure}
   \centering
