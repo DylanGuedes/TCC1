@@ -66,7 +66,7 @@ passar os parâmetros configurados para o Shock, que ajustará no Spark.
 A Figura \ref{fig:forensicparams}
 apresenta a página de configuração de um \textit{stream} no Forensic.
 
-\lstinputlisting[caption={
+\lstinputlisting[float,floatplacement=H,caption={
   Ingestão de dados no Shock via \textit{socket} e Kafka.
   }]{editaveis/arquivos/ingestion.py}
 
@@ -87,7 +87,7 @@ de dados, quando valores estão como \textit{string} quando são necessários va
 \textit{double}. O Shock apresenta somente \textit{stores} de \textit{cast},
 que são essenciais no uso do InterSCity e de consumo do Kafka.
 
-\lstinputlisting[caption={
+\lstinputlisting[float,floatplacement=H,caption={
   Tratamento de dados no Shock via \textit{cast}.
 }]{editaveis/arquivos/store.py}
 
@@ -101,7 +101,7 @@ requisição no Kafka com o conteúdo \small{\textbf{processing;\{"stream": "mys
 "shock\_action": "streamFilter", "query": "select * from air\_quality where
 'value' == 31"\}}}, ou configurar via Forensic.
 
-\lstinputlisting[caption={
+\lstinputlisting[float,floatplacement=H,caption={
   Operações de análise de dados no Shock.
 }]{editaveis/arquivos/processing.py}
 
@@ -118,7 +118,7 @@ combinação com outras ferramentas que leiam da saída padrão. Categorizamos
 no Shock o nome \textit{sink} para as diferentes estratégias de publicação,
 que é o nome utilizado pelo Spark.
 
-\lstinputlisting[caption={
+\lstinputlisting[float,floatplacement=H,caption={
   Estratégias de publicação de resultados presentes no Shock.
 }]{editaveis/arquivos/sinks.py}
 
@@ -131,3 +131,79 @@ publicação via memória), e que publicam em uma fonte desejada via
 \textit{websocket}. Essa alternativa não precisaria existir caso
 a publicação via Kafka já estivesse disponível no Spark, mas enquanto o
 lançamento da versão 2.2 não ocorre, acaba sendo uma opção válida.
+
+Com o propósito de aproximar cenários mais reais às desenvolvidas, separamos
+três casos de uso para uso no Forensic e no Shock, utilizando como bases alguns
+coletores de dados de São
+Paulo\footnote{\url{https://github.com/lucaskanashiro/collect_sp_data}}. De
+maneira geral, os casos de uso abrangem todos os conceitos e estágios citados
+anteriormente, como o \textit{cast} de dados, filtros, dentre outros.
+
+\section{CASO DE USO 1 - REGIÕES COM QUALIDADE DO AR INSATISFATÓRIA}
+
+O primeiro caso que separamos é o de regiões que apresentam qualidade do ar
+insatisfatória, utilizando como base os dados da
+CETESB\footnote{\url{http://sistemasinter.cetesb.sp.gov.br/Ar/php/ar_resumo_hora.php}}.
+A solução desse caso de uso pode ser divida em três etapas:
+\begin{enumerate}
+    \item Coletar os dados;
+    \item Publicar os dados no InterSCity;
+    \item Configurar um \textit{stream} que filtre os dados, removendo
+        da lista os dados com boa qualidade do ar (pois queremos as regiões
+        com qualidade insatisfatória).
+\end{enumerate}
+
+O primeiro passo, de coleta dos dados, pode ser resolvido via \textit{crawler},
+para extrair e normalizar os dados do \textit{site}. Um \textit{script} que
+utiliza o Mechanize já havia sido desenvolvido por contribuidores do
+InterSCity\footnote{\url{https://github.com/lucaskanashiro/collect_sp_data/blob/master/air_quality.rb}},
+e pôde ser reaproveitado.
+
+O segundo passo, de publicação dos dados no InterSCity, se baseia na
+normalização dos dados e das requisições, para que aja uma interação com o
+Resource Adaptor. Adaptamos o \textit{script} mencionado no passo anterior
+para que passasse a fazer requisições REST ao Resource Adaptor do InterSCity,
+possibilitando o registro de recursos e o envio dos dados.
+
+O terceiro passo, de configuração do \textit{stream}, é feito através do Forensic.
+Um \textit{stream} deve ser criado na interface, e configurado para uso dos
+\textit{stages} \textit{Kafka Ingestion}, \textit{Kafka Cast} e \textit{Filter}.
+O quarto \textit{stage}, de \textit{publish}, é mais flexível, e qualquer
+estratégia disponível no Forensic serve para esse caso de uso. O Forensic
+apresenta uma página de alertas, que é populada via um \textit{flush}
+específico. Quando esse \textit{flush} é acionado, o Shock organiza um \textit{job}
+que lê de um repositório específico no formato Parquet, e publica no Forensic
+os dados via \textit{websocket}.
+
+\lstinputlisting[float,floatplacement=H,language=elixir,caption={Consumo dos dados via \textit{websocket}
+caso o evento seja \textit{new\_event}.}]{editaveis/arquivos/channel.ex}
+
+Após o \textit{stream} ser criado e os \textit{stages} selecionados, basta
+configurar os parâmetros e transferir as definições para o Shock. A Figura
+\ref{fig:case1} apresenta uma tela do Forensic com os \textit{stages}
+mencionados selecionados. Para os \textit{stages} utilizados, as
+configurações de parâmetros foram:
+
+\begin{itemize}
+    \item \textbf{Kafka Ingestion:} O parâmetro \textit{topic} foi definido
+        como \textit{interscity}, e é o tópico onde o InterSCity publica
+        novos dados. O parâmetro \textit{brokers} foi definido como
+        \textit{kafka:9092}, referente ao endereço do Kafka no contêiner do
+        Docker utilizado para esse exemplo;
+    \item \textbf{Kafka Cast:} Esse \textit{stage} não precisa ser configurado.
+    \item \textbf{Filter:} O parâmetro \textit{query} desse filtro foi
+        configurado com o valor \textit{capability == `air\_quality` AND value != `Boa`},
+        filtrando \textit{capabilities} que não são sobre qualidade do ar e
+        com valores não satisfatórios;
+    \item \textbf{Parquet Publishing:} O parâmetro \textit{path} foi definido
+        como \textit{/analysis}, que será utilizado pelo \textit{flush} como
+        mencionado anteriormente.
+\end{itemize}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figuras/parametros.png}
+  \caption{Parâmetros do primeiro caso.}
+  \label{fig:case1}
+\end{figure}
+
