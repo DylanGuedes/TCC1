@@ -1,3 +1,4 @@
+# source: https://gitlab.com/DGuedes/shock/blob/master/shock/ingestion.py
 def socketIngestion(args: dict) -> SparkDataFrame:
     spark = args.get("spark")
     host = args.get("host")

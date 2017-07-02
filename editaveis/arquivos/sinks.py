@@ -1,3 +1,4 @@
+# source: https://gitlab.com/DGuedes/shock/blob/master/shock/sinks.py
 def consoleSink(stream: StructuredStream, args: dict) -> OutputStream:
     streamName = args.get("stream")
     return stream.writeStream.outputMode('append').format('console') \

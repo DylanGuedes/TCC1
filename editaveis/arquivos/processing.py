@@ -1,3 +1,4 @@
+# source: https://gitlab.com/DGuedes/shock/blob/master/shock/processing.py
 def streamFilter(stream: SparkDataFrame, args: dict) -> SparkDataFrame:
     query = args.get("query")
     if (query):

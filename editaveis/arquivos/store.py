@@ -1,3 +1,4 @@
+# source: https://gitlab.com/DGuedes/shock/blob/master/shock/processing.py
 def castentity(stream: DataStreamReader, args: dict) -> DataStreamReader:
     json_objects = []
     for u in ["uuid", "capability", "timestamp", "value"]:
