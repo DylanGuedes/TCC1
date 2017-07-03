@@ -182,23 +182,22 @@ Após o \textit{stream} ser criado e os \textit{stages} selecionados, basta
 configurar os parâmetros e transferir as definições para o Shock. A Figura
 \ref{fig:case1} apresenta uma tela do Forensic com os \textit{stages}
 mencionados selecionados. Para os \textit{stages} utilizados, as
-configurações de parâmetros foram:
+configurações de parâmetros estão apresentadas na Tabela \ref{tab:case1}.
 
-\begin{itemize}
-    \item \textbf{Kafka Ingestion:} O parâmetro \textit{topic} foi definido
-        como \textit{interscity}, e é o tópico onde o InterSCity publica
-        novos dados. O parâmetro \textit{brokers} foi definido como
-        \textit{kafka:9092}, referente ao endereço do Kafka no contêiner do
-        Docker utilizado para esse exemplo;
-    \item \textbf{Kafka Cast:} Esse \textit{stage} não precisa ser configurado.
-    \item \textbf{Filter:} O parâmetro \textit{query} desse filtro foi
-        configurado com o valor \textit{capability == `air\_quality` AND value != `Boa`},
-        filtrando \textit{capabilities} que não são sobre qualidade do ar e
-        com valores não satisfatórios;
-    \item \textbf{Parquet Publishing:} O parâmetro \textit{path} foi definido
-        como \textit{/analysis}, que será utilizado pelo \textit{flush} como
-        mencionado anteriormente.
-\end{itemize}
+\begin{table}[]
+    \centering
+    \caption{Parâmetros do \textit{stream} utilizado no primeiro caso de uso.}
+    \label{tab:case1}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textit{\textbf{Stage}}                   & \textbf{Parâmetro} & \textbf{Valor}                                         \\ \hline
+        \multirow{2}{*}{\textit{Kafka Ingestion}} & \textit{topic}     & \textit{interscity}                                    \\ \cline{2-3} 
+                                                  & \textit{brokers}   & \textit{kafka:9092}                                    \\ \hline
+                                                  \textit{Kafka Cast}                       & -                  & -                                                      \\ \hline
+                                                  \textit{Filter}                           & \textit{query}     & \textit{capability == air\_quality AND value != `boa`} \\ \hline
+                                                  \textit{Parquet Publishing}               & \textit{path}      & \textit{/analysis}                                     \\ \hline
+    \end{tabular}
+\end{table}
 
 \begin{figure}
   \centering
@@ -207,3 +206,84 @@ configurações de parâmetros foram:
   \label{fig:case1}
 \end{figure}
 
+Por fim, basta seguir os passos de transferência que o Forensic sugere (\textit{Create
+Stream, Configure Stream, Inject Pipeline e Start Streaming}, presentes no
+topo da Figura \ref{fig:case1}. O Shock então começará o processamento dos
+dados, e a próxima vez que o usuário visitar a página de alertas e requisitar
+atualização, aparecerão os dados insatisfatórios da qualidade do ar da cidade
+de São Paulo.
+
+\section{CASO DE USO 2 - MÉDIA DE BICICLETAS LIVRES NA REGIÃO COM COMBINAÇÃO DE STREAMS}
+
+O segundo caso que separamos é o de média de bicicletas livres em estações
+de bicicletas de São Paulo, utilizando como base os dados do
+CityBik\footnote{\url{https://citybik.es/}}. Esse caso pode ser visto como uma
+versão mais complexa do caso anterior, pois deve ser feito o filtro de
+\textit{capabilities} de bicicletas e o cálculo da média dos valores. Ainda,
+como mencionado, o Shock só disponibiliza 4 \textit{stages} por
+\textit{stream}, e como esses requisitos carecem ao menos 5, devem ser criados
+dois \textit{streams}, onde o primeiro deve ingerir dados do InterSCity, e o
+segundo deve ingerir os resultados do primeiro.
+
+Utilizando os mesmos passos definidos no caso de uso anterior, para o Passo 1
+desenvolvemos um
+\textit{script}\footnote{\url{https://github.com/lucaskanashiro/collect_sp_data/blob/interscity_integration/citybik.rb}}
+que requisita dados à API do CityBik. Após a ingestão desses dados, para o 
+Passo 2, o
+\textit{script} se comunica com o Resource Adaptor, publicando os dados no
+InterSCity.
+
+Para o Passo 3, devem ser configurados dois \textit{streams}. O primeiro deve
+conter os \textit{stages} \textit{Kafka Ingestion}, \textit{Kafka Cast},
+\textit{Filter} e \textit{Parquet Publishing}, de modo a ingerir novos dados
+do InterSCity, filtrar dados não desejados e disponibilizar os dados via
+SparkSession. O segundo \textit{stream} deve conter os \textit{stages}
+\textit{InterSCity Parquet Ingestion}, \textit{Mean} e \textit{Parquet
+Publishing}. A ligação entre os dois \textit{streams} ocorre quando o primeiro
+\textit{stream} publica resultados em um arquivo Parquet, e o segundo
+\textit{stream} ingere esses resultados como entrada. O valor dos parâmetros
+utilizados no primeiro \textit{stream} estão apresentados na Tabela
+\ref{tab:case2-1}, e os parâmetros do \textit{stream} 2 na Tabela
+\ref{tab:case2-2}.
+
+\begin{table}[]
+    \centering
+    \caption{Parâmetros do primeiro \textit{stream}.}
+    \label{tab:case2-1}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textit{\textbf{Stage}}                   & \textbf{Parâmetro} & \textbf{Valor}                      \\ \hline
+        \multirow{2}{*}{\textit{Kafka Ingestion}} & \textit{topic}     & \textit{interscity}                 \\ \cline{2-3} 
+                                                  & \textit{brokers}   & \textit{kafka:9092}                 \\ \hline
+                                                  \textit{Kafka Cast}                       & -                  & -                                   \\ \hline
+                                                  \textit{Filter}                           & \textit{query}     & \textit{capability == free\_bikes}  \\ \hline
+                                                  \textit{Parquet Publishing}               & \textit{path}      & \textit{/interscity-data/freebikes} \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[]
+    \centering
+    \caption{Parâmetros do segundo \textit{stream}.}
+    \label{tab:case2-2}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textit{\textbf{Stage}}                   & \textbf{Parâmetro} & \textbf{Valor}                      \\ \hline
+        \multirow{2}{*}{\textit{Kafka Ingestion}} & \textit{topic}     & \textit{interscity}                 \\ \cline{2-3} 
+                                                  & \textit{brokers}   & \textit{kafka:9092}                 \\ \hline
+                                                  \textit{Kafka Cast}                       & -                  & -                                   \\ \hline
+                                                  \textit{Filter}                           & \textit{query}     & \textit{capability == free\_bikes}  \\ \hline
+                                                  \textit{Parquet Publishing}               & \textit{path}      & \textit{/interscity-data/freebikes} \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figuras/caso2-1.png}
+  \caption{Parâmetros do primeiro \textit{stream} do segundo caso.}
+  \label{fig:case2}
+\end{figure}
+
+Após a configuração dos parâmetros e transferência das configurações para o
+Shock, semelhante ao ocorrido no caso de uso anterior, os dois \textit{streams}
+começam o processamento dos dados, retornando para o Forensic a média de
+bicicletas disponíveis na região.
