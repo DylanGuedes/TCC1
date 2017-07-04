@@ -7,7 +7,7 @@ para processamento de seus dados. Juntamente com o novo serviço, desenvolvemos
 uma aplicação que abstrai as ferramentas de \textit{Big Data} utilizadas pelo
 projeto, e que fornece meios para que outras aplicações de cidades inteligentes
 requisitem tarefas para serem processadas pela plataforma. Com a incorporação
-dos resultados que desenvolvemos o InterSCity passa então a poder atuar em
+dos resultados que desenvolvemos, o InterSCity passa a poder atuar em
 operações com maior massa de dados e a fornecer processamento de dados para
 terceiros através da plataforma.
 
@@ -27,13 +27,19 @@ elas:
     \item \textbf{Utilização dos \textit{data frames}:} A utilização dos
         \textit{data frames} possibilitou o uso de síntaxe SQL, de menor
         complexidade que a manipulação de \textit{RDDs};
-    \item \textbf{Múltiplos \textit{streams}:} Mudamos a API de \textit{stream}
-        para fazer uso dos \textit{streams} estruturados, que possibilitam o
-        uso de \textit{streams} múltiplos, o que possibilita que uma instância
-        do serviço de processamento possa ser utilizado por mais de um usuário.
+    \item \textbf{Múltiplos \textit{streams}:} Mudamos a API de \textit{streams}
+        para que fosse feito o uso de \textit{streams} estruturados, que
+        possibilitam o uso de \textit{streams} múltiplos, adicionando ao
+        InterSCity a possibilidade de, com apenas uma instância do ecossistema
+        da plataforma, servir processamento de dados para vários usuários.
 \end{itemize}
 
 Além das novas funcionalidades, a partir do desenvolvimento deste TCC, foram
 feitas outras contribuições, como (i) a criação de um novo \textit{script} de
 coleta de dados, que consome a API de estações de bicicleta; e (ii) conserto
 de um \textit{script} que ingere dados sobre a qualidade do ar.
+
+Do ponto de vista das limitações, destacamos os fluxos alternativos do Shock,
+que não receberam tanta atenção. Não é possível, por exemplo, a edição de um
+\textit{stream} já editado, ou a abortagem do processamento de um
+\textit{stream}. 

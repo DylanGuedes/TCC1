@@ -16,13 +16,14 @@ fornece um conjunto de funcionalidades que permitem ao usuário final configurar
 a atuação dos \textit{streams}, semelhante a outros serviços existentes,
 como o Amazon AWS\footnote{\url{https://aws.amazon.com/kinesis/analytics/}}.
 Um usuário que deseje interagir com o Shock e o InterSCity deve
-(i) configurar um \textit{stream} novo com os
-parâmetros desejados; (ii) criar esse \textit{stream} no Shock; (iii) injetar
-esse \textit{stream} no Shock; (iv) e iniciar o processamento do
-\textit{stream}. O Forensic então abstrai esses 4 passos, facilitando o uso
-das ferramentas e da plataforma. A Figura \ref{fig:forensicparams} apresenta
+(1) configurar um \textit{stream} novo com os
+parâmetros desejados; (2) criar esse \textit{stream} no Shock; (3) injetar
+esse \textit{stream} no Shock; (4) e iniciar o processamento do
+\textit{stream}. O Forensic abstrai esses 4 passos, facilitando o uso
+das ferramentas e da plataforma, aproximando usuários finais que não tenham
+grande conhecimento do código-fonte do Shock. A Figura \ref{fig:forensicparams} apresenta
 a página de visualização e edição de um \textit{stream}, onde é possível
-conferir os parâmetros configurados para cada estágio do \textit{stream}.
+conferir os parâmetros configurados para cada estágio.
 
 \begin{figure}
   \centering
@@ -69,13 +70,13 @@ possibilitando o registro de recursos e o envio dos dados.
 O terceiro passo, de configuração do \textit{stream}, é feito através do Forensic.
 Um \textit{stream} deve ser criado na interface, e configurado para uso dos
 estágios \textit{Kafka Ingestion}, \textit{Kafka Cast} e \textit{Filter}.
-O quarto estágio, de \textit{publish}, é mais flexível, e qualquer
+O estágio de publicação é mais flexível, e qualquer
 estratégia disponível no Forensic serve para esse caso de uso. O Forensic
 apresenta uma página de alertas, que é populada via um \textit{flush}
 específico apresentado na Listagem \ref{lst:flush1}. Quando esse
 \textit{flush} é acionado, o Shock organiza um \textit{job}
 que lê de um repositório específico no formato Parquet, e publica no Forensic
-os dados via \textit{websocket}.
+via \textit{websocket}.
 
 \lstinputlisting[float,label={lst:flush1},floatplacement=H,language=elixir,caption={Consumo dos dados via \textit{websocket}
 caso o evento seja \textit{new\_report}.}]{editaveis/arquivos/channel.ex}
@@ -144,7 +145,10 @@ publicação. A ligação entre os dois \textit{streams} ocorre quando o primeir
 \textit{stream} ingere esses resultados como entrada. O valor dos parâmetros
 utilizados no primeiro \textit{stream} estão apresentados na Tabela
 \ref{tab:case2-1}, e os parâmetros do segundo \textit{stream} na Tabela
-\ref{tab:case2-2}.
+\ref{tab:case2-2}. Após a configuração dos parâmetros e transferência das
+configurações para o Shock, semelhante ao ocorrido no caso de uso anterior,
+os dois \textit{streams} começam o processamento dos dados, retornando para o
+Forensic a média de bicicletas disponíveis na região.
 
 \begin{table}[]
     \centering
@@ -182,7 +186,3 @@ utilizados no primeiro \textit{stream} estão apresentados na Tabela
   \label{fig:case2}
 \end{figure}
 
-Após a configuração dos parâmetros e transferência das configurações para o
-Shock, semelhante ao ocorrido no caso de uso anterior, os dois \textit{streams}
-começam o processamento dos dados, retornando para o Forensic a média de
-bicicletas disponíveis na região.

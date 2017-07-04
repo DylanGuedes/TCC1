@@ -107,23 +107,25 @@ mas caso seja desejado o uso de outra estratégia, basta implementar um novo
 
 A Figura \ref{fig:shock} ilustra o uso do Shock, utilizando como exemplo uma
 aplicação de cidades inteligentes desenvolvida pelo time do
-InterSCity\footnote{\url{https://gitlab.com/smart-city-software-platform/external-resources/tree/master/bus}}.
-Essa aplicação disponibiliza as coordenadas, o tempo, o índice e a linha de
+InterSCity\footnote{\url{https://gitlab.com/smart-city-software-platform/external-resources/tree/master/bus}},
+que disponibiliza dados como as coordenadas, o tempo, o índice e a linha de
 alguns ônibus de São Paulo. Imaginando que seja desejado a criação de uma nova
 informação a partir dos dados dos ônibus, como a \textit{velocidade}, o fluxo
 de uso com o Shock poderia ser: (1) um cliente que deseje utilizar o serviço
-de processamentos do InterScity analisa as funções que o Shock disponibiliza
-para criação do \textit{stream}, e constrói o \textit{stream} desejado através
-dessas funções - via Kafka. Os recursos IoT (3) publicam no Resource Adaptor a
-chegada de novos dados de ônibus. O Resource Adaptor (4) publica os novos dados
-em um tópico específico no Kafka para que sejam recebidos pelo Shock, que os (5)
-recebe nos \textit{streams} configurados para ingerir dados naquele tópico, e
-os processa através do \textit{pipeline} construído no Passo 2. Por fim, após o
+de processamentos do InterSCity analisa as funções que o Shock disponibiliza
+para criação do \textit{stream}, e (2) constrói o \textit{stream} desejado através
+dessas funções, via Kafka. Os recursos IoT (3) publicam no Resource Adaptor a
+chegada de novos dados de ônibus, para que esses dados sejam (4) publicados em
+um tópico específico do Kafka pelo Resource Adaptor. Após serem disponibilizados
+no Kafka, os dados ficam disponíveis para serem utilizados pelo Shock, que os (5)
+recebe nos \textit{streams} configurados para ingerir dados, e os processa
+através do \textit{pipeline} construído no Passo 2. Por fim, após o
 processamento dos dados, o Shock pode (6) disponibilizar os resultados do
 processamento, que pode ser reaproveitado por aplicações terceiras.
 
 Do ponto de vista da implementação, utilizamos no Shock a arquitetura de camadas
-\textit{ingest, store, analyze} e \textit{publish}, apresentada na Figura
+\textit{ingest, store, analyze} e \textit{publish}\footnote{Utilizaremos os
+termos traduzidos dessa arquitetura.}, apresentada na Figura
 \ref{fig:ingeststore}, que criamos para o Shock. Essa arquitetura é baseada
 em arquiteturas mais difundidas, como a \textit{ingest, store, analyze} e
 \textit{visualize}, utilizada na plataforma Google Cloud
@@ -131,8 +133,8 @@ Platform\footnote{\url{https://cloud.google.com/solutions/data-lifecycle-cloud-p
 e a arquitetura \textit{collecton tier, message queuing tier, analysis tier,
 in-memory data store} e \textit{data access tier}, explicada em
 \citeonline{psaltis2017streaming}. No Shock, cada uma dessas camadas são
-classificadas como \textit{stages} de um \textit{stream}, podendo um
-\textit{stream} ter no máximo 4 \textit{stages}.
+classificadas como estágios de um \textit{stream}, podendo um
+\textit{stream} ter no máximo 4 estágios.
 
 Diferente dos outros serviços da plataforma, as aplicações clientes podem interagir
 com o Shock através de uma API fornecida via o Kafka. Assim, as aplicações enviam
@@ -152,7 +154,7 @@ deve ser enviada caso queira-se o registro de um estágio de ingestão no
   \label{fig:ingeststore}
 \end{figure}
 
-O primeiro estágio de um \textit{stream}, \textit{\textbf{ingest}}, trata-se da
+O primeiro estágio de um \textit{stream}, a \textit{\textbf{ingestão}}, trata-se da
 ingestão dos dados a partir de alguma fonte, como algum tópico do Kafka, ou
 algum arquivo novo. Atualmente o Shock fornece três tipos diferentes de
 ingestão: ingestão via tópico do Kafka, ingestão via arquivo (Parquet e JSON)
@@ -166,20 +168,20 @@ de duas estratégias de ingestão disponíveis no Shock.
   Ingestão de dados no Shock via \textit{socket} e Kafka.
   }]{editaveis/arquivos/ingestion.py}
 
-O segundo estágio de um \textit{stream}, \textit{\textbf{setup}}, tem o papel
+O segundo estágio de um \textit{stream}, de \textit{\textbf{preparo}}, tem o papel
 de ajuste e limpeza dos dados para que sejam utilizados pelos \textit{streams}
-sem maiores complicações. Um exemplo típico é o uso de um \textit{stage} de
-\textit{setup} que faça \textit{cast} de dados, quando valores estão como
+sem maiores complicações. Um exemplo típico é o uso de um estágio de preparo
+que faça \textit{cast} de dados, quando valores estão como
 \textit{string} quando são necessários valores \textit{double}. Atualmente,
-o Shock apresenta somente \textit{setups} de \textit{cast}, que são essenciais
-no uso do InterSCity e de consumo do Kafka, e estão apresentados na Listagem
+o Shock apresenta somente preparo de dados via \textit{cast}, que são essenciais
+no uso do InterSCity e de consumo do Kafka, apresentados na Listagem
 \ref{lst:setup}.
 
 \lstinputlisting[float,floatplacement=H,label={lst:setup},caption={
   Tratamento de dados no Shock via \textit{cast}.
 }]{editaveis/arquivos/store.py}
 
-O terceiro estágio de um \textit{stream}, \textit{\textbf{analyze}}, é o
+O terceiro estágio de um \textit{stream}, de \textit{\textbf{análise}}, é o
 estágio principal do processamento, e permite filtros, agregações e cálculos.
 No Shock, a etapa de análise dos dados recebe como entrada um \textit{stream}
 de dados e devolve um \textit{stream} transformado. Uma aplicação que deseje
@@ -187,26 +189,26 @@ utilizar a operação de filtro no \textit{stream} \textit{mystream} com a final
 de filtrar os valores de \textit{air\_quality} iguais a 31, deve fazer uma
 requisição no Kafka com o conteúdo \small{\textbf{processing;\{"stream": "mystream",
 "shock\_action": "streamFilter", "query": "select * from air\_quality where
-'value' == 31"\}}}. Algumas possibilidades de \textit{stages} do tipo
-\textit{analyze} estão contidos na Listagem \ref{lst:analyze}.
+'value' == 31"\}}}. Algumas possibilidades de estágios de análise
+estão contidos na Listagem \ref{lst:analyze}.
 
 \lstinputlisting[float,floatplacement=H,label={lst:analyze},caption={
   Operações de análise de dados no Shock.
 }]{editaveis/arquivos/processing.py}
 
-O último estágio de um \textit{stream}, \textit{\textbf{publish}}, é o estágio
+O último estágio de um \textit{stream}, de \textit{\textbf{publicação}}, é o estágio
 de apuração do processamento, retornando os dados necessários para o cliente.
-O Shock atualmente permite a publicação via arquivo, memória e console, e após o
+O Shock atualmente permite a publicação via arquivo, memória e \textit{console}, e após o
 lançamento da versão 2.2 do Spark, permitirá a publicação via Kafka. A
 publicação via arquivo é limitada, pois não permite a publicação em um servidor
 externo. A publicação via memória também não permite, mas é interessante pois
 o conteúdo passa a estar disponível para ser requisitado via SparkSession,
-permitindo consultas com síntaxe SQL. Por fim, a publicação via \textit{console} está
+permitindo consultas com sintaxe SQL. Por fim, a publicação via \textit{console} está
 presente somente para fins de desenvolvimento, mas é possível que ocorra uma
 combinação com outras ferramentas que leiam da saída padrão. Categorizamos
 no Shock o nome \textit{sink} para as diferentes estratégias de publicação,
 que é o nome utilizado pelo Spark. A Listagem \ref{lst:publish} apresenta as
-estratégias de publicação em console, Parquet e memória.
+estratégias de publicação em \textit{console}, Parquet e memória.
 
 \lstinputlisting[float,floatplacement=H,label={lst:publish},caption={
   Estratégias de publicação de resultados presentes no Shock.
