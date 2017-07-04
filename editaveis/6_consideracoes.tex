@@ -6,11 +6,34 @@ atuação em cenários mais abrangentes, por meio de um novo serviço
 para processamento de seus dados. Juntamente com o novo serviço, desenvolvemos
 uma aplicação que abstrai as ferramentas de \textit{Big Data} utilizadas pelo
 projeto, e que fornece meios para que outras aplicações de cidades inteligentes
-requisitem tarefas para serem processadas pela plataforma, e uma aplicação que
-interage com o novo serviço desenvolvido, facilitando o uso para o usuário
-final e servindo como prova de conceito. Com a incorporação
-dos resultados que desenvolvemos o InterSCity passa então: a poder atuar em
-operações com maior massa de dados; a fornecer processamento de dados para
-terceiros através da plataforma; e a possibilitar o uso de algoritmos mais
-complexos e de agregação de dados.
+requisitem tarefas para serem processadas pela plataforma. Com a incorporação
+dos resultados que desenvolvemos o InterSCity passa então a poder atuar em
+operações com maior massa de dados e a fornecer processamento de dados para
+terceiros através da plataforma.
 
+Nesta segunda etapa do trabalho, que começou em maio/2017, focamos em
+amadurecer o Shock e em definir casos de uso que pudessem ser resolvidos com
+a sua utilização - o que nos levou ao desenvolvimento do Forensic, que apresenta
+uma interface mais amigável ao usuário final. Com relação ao planejado, embora
+tenhamos dado foco em amadurecer o Shock e a solucionar cenários de uso, ainda
+assim implementamos parte das atividades planejadas relacionadas a evolução e
+funcionalidades, por serem importantes em cenários de uso mais reais. Foram
+elas:
+
+\begin{itemize}
+    \item \textbf{Documentar a API de serviços:} Conseguimos dar maior ênfase a
+        documentação da API do serviço desenvolvido, que podem ser conferidas
+        num servidor específico para isso, desenvolvido em Sphinx;
+    \item \textbf{Utilização dos \textit{data frames}:} A utilização dos
+        \textit{data frames} possibilitou o uso de síntaxe SQL, de menor
+        complexidade que a manipulação de \textit{RDDs};
+    \item \textbf{Múltiplos \textit{streams}:} Mudamos a API de \textit{stream}
+        para fazer uso dos \textit{streams} estruturados, que possibilitam o
+        uso de \textit{streams} múltiplos, o que possibilita que uma instância
+        do serviço de processamento possa ser utilizado por mais de um usuário.
+\end{itemize}
+
+Além das novas funcionalidades, a partir do desenvolvimento deste TCC, foram
+feitas outras contribuições, como (i) a criação de um novo \textit{script} de
+coleta de dados, que consome a API de estações de bicicleta; e (ii) conserto
+de um \textit{script} que ingere dados sobre a qualidade do ar.

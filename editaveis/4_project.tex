@@ -121,3 +121,100 @@ recebe nos \textit{streams} configurados para ingerir dados naquele tópico, e
 os processa através do \textit{pipeline} construído no Passo 2. Por fim, após o
 processamento dos dados, o Shock pode (6) disponibilizar os resultados do
 processamento, que pode ser reaproveitado por aplicações terceiras.
+
+Do ponto de vista da implementação, utilizamos no Shock a arquitetura de camadas
+\textit{ingest, store, analyze} e \textit{publish}, apresentada na Figura
+\ref{fig:ingeststore}, que criamos para o Shock. Essa arquitetura é baseada
+em arquiteturas mais difundidas, como a \textit{ingest, store, analyze} e
+\textit{visualize}, utilizada na plataforma Google Cloud
+Platform\footnote{\url{https://cloud.google.com/solutions/data-lifecycle-cloud-platform}},
+e a arquitetura \textit{collecton tier, message queuing tier, analysis tier,
+in-memory data store} e \textit{data access tier}, explicada em
+\citeonline{psaltis2017streaming}. No Shock, cada uma dessas camadas são
+classificadas como \textit{stages} de um \textit{stream}, podendo um
+\textit{stream} ter no máximo 4 \textit{stages}.
+
+Diferente dos outros serviços da plataforma, as aplicações clientes podem interagir
+com o Shock através de uma API fornecida via o Kafka. Assim, as aplicações enviam
+mensagens ao Kafka utilizando um formato semelhante ao JSON, com o padrão ``arg1;\{arg2\}'',
+onde o primeiro \textit{token} (antes do ponto e vírgula), ``arg1'', representa o nome
+da ação desejada, e o segundo, ``arg2'', os argumentos da ação. Um
+\textit{handler} no Shock receberá a ação requisitada no método
+\textit{handle}, e deve tratar a requisição recebida. Por exemplo, uma mensagem
+\small{\textbf{ingestion;\{"stream": "mystream", "shock\_action": "socketIngestion"\}}},
+deve ser enviada caso queira-se o registro de um estágio de ingestão no
+\textit{stream} \textit{mystream} utilizando a estratégia \textit{socketIngestion}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figuras/arquiteturaforensic.png}
+  \caption{Padrão \textit{ingest, setup, analyze e publish.}}
+  \label{fig:ingeststore}
+\end{figure}
+
+O primeiro estágio de um \textit{stream}, \textit{\textbf{ingest}}, trata-se da
+ingestão dos dados a partir de alguma fonte, como algum tópico do Kafka, ou
+algum arquivo novo. Atualmente o Shock fornece três tipos diferentes de
+ingestão: ingestão via tópico do Kafka, ingestão via arquivo (Parquet e JSON)
+e ingestão via \textit{socket}. A depender da estratégia de ingestão, alguns
+parâmetros são necessários na configuração - numa ingestão via Kafka, por
+exemplo, é necessário configurar o endereço do \textit{broker} e os tópicos
+que serão utilizados. A Listagem \ref{lst:ingestion} apresenta o código-fonte
+de duas estratégias de ingestão disponíveis no Shock.
+
+\lstinputlisting[float,floatplacement=H,label={lst:ingestion},caption={
+  Ingestão de dados no Shock via \textit{socket} e Kafka.
+  }]{editaveis/arquivos/ingestion.py}
+
+O segundo estágio de um \textit{stream}, \textit{\textbf{setup}}, tem o papel
+de ajuste e limpeza dos dados para que sejam utilizados pelos \textit{streams}
+sem maiores complicações. Um exemplo típico é o uso de um \textit{stage} de
+\textit{setup} que faça \textit{cast} de dados, quando valores estão como
+\textit{string} quando são necessários valores \textit{double}. Atualmente,
+o Shock apresenta somente \textit{setups} de \textit{cast}, que são essenciais
+no uso do InterSCity e de consumo do Kafka, e estão apresentados na Listagem
+\ref{lst:setup}.
+
+\lstinputlisting[float,floatplacement=H,label={lst:setup},caption={
+  Tratamento de dados no Shock via \textit{cast}.
+}]{editaveis/arquivos/store.py}
+
+O terceiro estágio de um \textit{stream}, \textit{\textbf{analyze}}, é o
+estágio principal do processamento, e permite filtros, agregações e cálculos.
+No Shock, a etapa de análise dos dados recebe como entrada um \textit{stream}
+de dados e devolve um \textit{stream} transformado. Uma aplicação que deseje
+utilizar a operação de filtro no \textit{stream} \textit{mystream} com a finalidade
+de filtrar os valores de \textit{air\_quality} iguais a 31, deve fazer uma
+requisição no Kafka com o conteúdo \small{\textbf{processing;\{"stream": "mystream",
+"shock\_action": "streamFilter", "query": "select * from air\_quality where
+'value' == 31"\}}}. Algumas possibilidades de \textit{stages} do tipo
+\textit{analyze} estão contidos na Listagem \ref{lst:analyze}.
+
+\lstinputlisting[float,floatplacement=H,label={lst:analyze},caption={
+  Operações de análise de dados no Shock.
+}]{editaveis/arquivos/processing.py}
+
+O último estágio de um \textit{stream}, \textit{\textbf{publish}}, é o estágio
+de apuração do processamento, retornando os dados necessários para o cliente.
+O Shock atualmente permite a publicação via arquivo, memória e console, e após o
+lançamento da versão 2.2 do Spark, permitirá a publicação via Kafka. A
+publicação via arquivo é limitada, pois não permite a publicação em um servidor
+externo. A publicação via memória também não permite, mas é interessante pois
+o conteúdo passa a estar disponível para ser requisitado via SparkSession,
+permitindo consultas com síntaxe SQL. Por fim, a publicação via \textit{console} está
+presente somente para fins de desenvolvimento, mas é possível que ocorra uma
+combinação com outras ferramentas que leiam da saída padrão. Categorizamos
+no Shock o nome \textit{sink} para as diferentes estratégias de publicação,
+que é o nome utilizado pelo Spark. A Listagem \ref{lst:publish} apresenta as
+estratégias de publicação em console, Parquet e memória.
+
+\lstinputlisting[float,floatplacement=H,label={lst:publish},caption={
+  Estratégias de publicação de resultados presentes no Shock.
+}]{editaveis/arquivos/sinks.py}
+
+Como alternativa às limitações de publicação dos dados, o Shock disponibiliza
+na API os \textit{flushes}, que atuam como \textit{jobs} adicionais que ingerem
+dados de alguma fonte (que não seja um \textit{stream}) e publicam em outra.
+Essa alternativa não precisaria existir caso
+a publicação via Kafka já estivesse disponível no Spark, mas enquanto o
+lançamento da versão 2.2 não ocorre, acaba sendo uma opção válida.
