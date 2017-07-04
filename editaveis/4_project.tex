@@ -124,14 +124,14 @@ processamento dos dados, o Shock pode (6) disponibilizar os resultados do
 processamento, que pode ser reaproveitado por aplicações terceiras.
 
 Do ponto de vista da implementação, utilizamos no Shock a arquitetura de camadas
-\textit{ingest, store, analyze} e \textit{publish}\footnote{Utilizaremos os
-termos traduzidos dessa arquitetura.}, apresentada na Figura
-\ref{fig:ingeststore}, que criamos para o Shock. Essa arquitetura é baseada
-em arquiteturas mais difundidas, como a \textit{ingest, store, analyze} e
+\textit{ingestão, tratamento, análise e publicação}, cujas traduções em inglês são
+respectivamente \textit{ingest, store, analyze} e \textit{publish}. Essa arquitetura
+é apresentada na Figura \ref{fig:ingeststore}, e a criamos para o Shock utilizando
+como base arquiteturas mais difundidas, como a \textit{ingest, store, analyze} e
 \textit{visualize}, utilizada na plataforma Google Cloud
 Platform\footnote{\url{https://cloud.google.com/solutions/data-lifecycle-cloud-platform}},
 e a arquitetura \textit{collecton tier, message queuing tier, analysis tier,
-in-memory data store} e \textit{data access tier}, explicada em
+in-memory data store} e \textit{data access tier}, explicada por
 \citeonline{psaltis2017streaming}. No Shock, cada uma dessas camadas são
 classificadas como estágios de um \textit{stream}, podendo um
 \textit{stream} ter no máximo 4 estágios.
@@ -139,7 +139,7 @@ classificadas como estágios de um \textit{stream}, podendo um
 Diferente dos outros serviços da plataforma, as aplicações clientes podem interagir
 com o Shock através de uma API fornecida via o Kafka. Assim, as aplicações enviam
 mensagens ao Kafka utilizando um formato semelhante ao JSON, com o padrão ``arg1;\{arg2\}'',
-onde o primeiro \textit{token} (antes do ponto e vírgula), ``arg1'', representa o nome
+onde o primeiro \textit{token}, ``arg1'', representa o nome
 da ação desejada, e o segundo, ``arg2'', os argumentos da ação. Um
 \textit{handler} no Shock receberá a ação requisitada no método
 \textit{handle}, e deve tratar a requisição recebida. Por exemplo, uma mensagem
@@ -168,10 +168,10 @@ de duas estratégias de ingestão disponíveis no Shock.
   Ingestão de dados no Shock via \textit{socket} e Kafka.
   }]{editaveis/arquivos/ingestion.py}
 
-O segundo estágio de um \textit{stream}, de \textit{\textbf{preparo}}, tem o papel
+O segundo estágio de um \textit{stream} é chamado \textit{\textbf{preparo}} e tem o papel
 de ajuste e limpeza dos dados para que sejam utilizados pelos \textit{streams}
 sem maiores complicações. Um exemplo típico é o uso de um estágio de preparo
-que faça \textit{cast} de dados, quando valores estão como
+que faça \textit{cast} (mudanças nos tipos de dados) de dados, quando valores estão como
 \textit{string} quando são necessários valores \textit{double}. Atualmente,
 o Shock apresenta somente preparo de dados via \textit{cast}, que são essenciais
 no uso do InterSCity e de consumo do Kafka, apresentados na Listagem
@@ -181,7 +181,7 @@ no uso do InterSCity e de consumo do Kafka, apresentados na Listagem
   Tratamento de dados no Shock via \textit{cast}.
 }]{editaveis/arquivos/store.py}
 
-O terceiro estágio de um \textit{stream}, de \textit{\textbf{análise}}, é o
+O terceiro estágio de um \textit{stream}, a \textit{\textbf{análise}}, é o
 estágio principal do processamento, e permite filtros, agregações e cálculos.
 No Shock, a etapa de análise dos dados recebe como entrada um \textit{stream}
 de dados e devolve um \textit{stream} transformado. Uma aplicação que deseje
@@ -196,7 +196,8 @@ estão contidos na Listagem \ref{lst:analyze}.
   Operações de análise de dados no Shock.
 }]{editaveis/arquivos/processing.py}
 
-O último estágio de um \textit{stream}, de \textit{\textbf{publicação}}, é o estágio
+O último estágio de um \textit{stream}, conhecido como estágio de
+\textit{\textbf{publicação}}, é o estágio
 de apuração do processamento, retornando os dados necessários para o cliente.
 O Shock atualmente permite a publicação via arquivo, memória e \textit{console}, e após o
 lançamento da versão 2.2 do Spark, permitirá a publicação via Kafka. A
@@ -205,14 +206,21 @@ externo. A publicação via memória também não permite, mas é interessante p
 o conteúdo passa a estar disponível para ser requisitado via SparkSession,
 permitindo consultas com sintaxe SQL. Por fim, a publicação via \textit{console} está
 presente somente para fins de desenvolvimento, mas é possível que ocorra uma
-combinação com outras ferramentas que leiam da saída padrão. Categorizamos
-no Shock o nome \textit{sink} para as diferentes estratégias de publicação,
-que é o nome utilizado pelo Spark. A Listagem \ref{lst:publish} apresenta as
-estratégias de publicação em \textit{console}, Parquet e memória.
+combinação com outras ferramentas que leiam da saída padrão do Sistema Operacional.
+Categorizamos no Shock o nome \textit{sink} para as diferentes estratégias de
+publicação, que é o nome utilizado pelo Spark. A Listagem \ref{lst:publish}
+apresenta as estratégias de publicação em \textit{console}, Parquet e memória.
 
 \lstinputlisting[float,floatplacement=H,label={lst:publish},caption={
   Estratégias de publicação de resultados presentes no Shock.
 }]{editaveis/arquivos/sinks.py}
+
+\begin{figure}
+  \centering
+    \includegraphics[scale=0.5]{figuras/ligacoes.png}
+  \caption{Comunicação entre o Shock e aplicações.}
+  \label{fig:ligacoes}
+\end{figure}
 
 Como alternativa às limitações de publicação dos dados, o Shock disponibiliza
 na API os \textit{flushes}, que atuam como \textit{jobs} adicionais que ingerem
@@ -220,3 +228,8 @@ dados de alguma fonte (que não seja um \textit{stream}) e publicam em outra.
 Essa alternativa não precisaria existir caso
 a publicação via Kafka já estivesse disponível no Spark, mas enquanto o
 lançamento da versão 2.2 não ocorre, acaba sendo uma opção válida.
+Nesse sentido, uma aplicação cliente do InterSCity poderia usar o Shock para
+realizar processamento de seus dados seguindo o fluxo de interação da Figura
+\ref{fig:ligacoes}. Nessa interação, a aplicação faz definições no Shock via
+Kafka, e o Shock apresenta os resultados pelos estágios de publicação ou por
+WebSocket.

@@ -4,8 +4,9 @@
 As contribuições deste trabalho propiciaram ao InterSCity a possibilidade de
 atuação em cenários mais abrangentes, por meio de um novo serviço
 para processamento de seus dados. Juntamente com o novo serviço, desenvolvemos
-uma aplicação que abstrai as ferramentas de \textit{Big Data} utilizadas pelo
-projeto, e que fornece meios para que outras aplicações de cidades inteligentes
+uma aplicação que visa demonstrar a utilização do Shock assim como abstrair
+as ferramentas de \textit{Big Data} utilizadas pelo projeto, e que fornece
+meios para que outras aplicações de cidades inteligentes
 requisitem tarefas para serem processadas pela plataforma. Com a incorporação
 dos resultados que desenvolvemos, o InterSCity passa a poder atuar em
 operações com maior massa de dados e a fornecer processamento de dados para
@@ -23,7 +24,8 @@ elas:
 \begin{itemize}
     \item \textbf{Documentar a API de serviços:} Conseguimos dar maior ênfase a
         documentação da API do serviço desenvolvido, que podem ser conferidas
-        num servidor específico para isso, desenvolvido em Sphinx;
+        num servidor específico para isso\footnote{\url{http://shock.readthedocs.io/en/latest/index.html}},
+        desenvolvido em Sphinx;
     \item \textbf{Utilização dos \textit{data frames}:} A utilização dos
         \textit{data frames} possibilitou o uso de síntaxe SQL, de menor
         complexidade que a manipulação de \textit{RDDs};
@@ -40,6 +42,21 @@ coleta de dados, que consome a API de estações de bicicleta; e (ii) conserto
 de um \textit{script} que ingere dados sobre a qualidade do ar.
 
 Do ponto de vista das limitações, destacamos os fluxos alternativos do Shock,
-que não receberam tanta atenção. Não é possível, por exemplo, a edição de um
-\textit{stream} já editado, ou a abortagem do processamento de um
-\textit{stream}. 
+que não receberam tanta atenção. Atualmente não é possível, por exemplo, a
+edição de um \textit{stream} que já está em estado de processamento, a
+abortagem do processamento de um \textit{stream} ou a visualização do
+\textit{log} do \textit{status} de um \textit{stream} pelo Forensic. Definimos
+então como os próximos passos para o Shock e Forensic:
+
+\begin{itemize}
+    \item \textbf{Fluxos alternativos para os \textit{streams}:} Operações como
+        a edição de um \textit{stream} ou visualização do \textit{log}
+        melhorariam a experiência de uso dos serviços por parte dos usuários
+        finais;
+    \item \textbf{Testes com cenários reais de cidades inteligentes:} O
+        Forensic e o Shock não foram testados um servidor de produção com um
+        fluxos real;
+    \item \textbf{Incorporação ao núcleo do InterSCity:} Com mais alguns
+        ajustes o Shock pode se tornar o serviço oficial de processamentos do
+        InterSCity;
+\end{itemize}

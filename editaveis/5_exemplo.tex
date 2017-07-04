@@ -25,7 +25,7 @@ grande conhecimento do código-fonte do Shock. A Figura \ref{fig:forensicparams}
 a página de visualização e edição de um \textit{stream}, onde é possível
 conferir os parâmetros configurados para cada estágio.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{figuras/pipeline.png}
     \caption{Página de configuração de um \textit{stream}. Os parâmetros
@@ -113,7 +113,18 @@ Stream, Configure Stream, Inject Pipeline e Start Streaming}), presentes no
 topo da Figura \ref{fig:case1}. O Shock então começará o processamento dos
 dados, e a próxima vez que o usuário visitar a página de alertas e requisitar
 atualização, aparecerão os dados insatisfatórios da qualidade do ar da cidade
-de São Paulo.
+de São Paulo. A Figura \ref{fig:reports} apresenta a página de visualização de
+resultados processados. Na figura, cada dado é mostrado separadamente, onde o
+título representa a capacidade do recurso, e texto centralizado o valor da
+respectiva capacidade.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{figuras/latest-reports.png}
+    \caption{Página de visualização de resultados.}
+  \label{fig:reports}
+\end{figure}
+
 
 \section{CASO DE USO 2 - MÉDIA DE BICICLETAS LIVRES NA REGIÃO COM COMBINAÇÃO DE STREAMS}
 
@@ -177,12 +188,4 @@ Forensic a média de bicicletas disponíveis na região.
 \textit{Memory Publishing} & \textit{table}     & \textit{avg}                        \\ \hline
 \end{tabular}
 \end{table}
-
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{figuras/caso2-1.png}
-  \caption{Parâmetros do primeiro \textit{stream} do segundo caso.}
-  \label{fig:case2}
-\end{figure}
 
