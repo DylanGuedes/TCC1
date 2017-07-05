@@ -4,14 +4,28 @@
 Como forma de ilustração do uso do serviço que desenvolvemos, elaboramos uma
 aplicação chamada
 Forensic\footnote{\url{https://gitlab.com/DGuedes/forensic}}, que interage
-com o Shock via Kafka,
-respeitando as definições feitas à cerca da API. A aplicação foi feita em
-Elixir, uma linguagem funcional desenhada para construir aplicações
-manuteníveis e escaláveis, utilizando o \textit{framework} Phoenix, que
-facilita no desenvolvimento de aplicações Web.
+com o Shock via Kafka, respeitando os padrões utilizados pela API. A aplicação
+foi feita em Elixir, uma linguagem funcional que utiliza a máquina virtual do
+Erlang, utilizando o \textit{framework} Phoenix, que facilita no desenvolvimento
+de aplicações Web.
+
+\begin{figure}[hbt]
+  \centering
+  \includegraphics[width=\textwidth]{figuras/pipeline.png}
+    \caption{Página de configuração de um \textit{stream}. Os parâmetros
+obrigatórios (\textit{topic e brokers}) foram configurados.}
+  \label{fig:forensicparams}
+\end{figure}
+
+\begin{figure}[hbt]
+  \centering
+  \includegraphics[width=\textwidth]{figuras/latest-reports.png}
+    \caption{Página de visualização de resultados.}
+  \label{fig:reports}
+\end{figure}
 
 O Forensic tem como principais objetivos abstrair o Shock do usuário final,
-e consequentemente, as ferramentas de Big Data (como o Spark), ao passo em que
+e consequentemente, as ferramentas de \textit{Big Data} (como o Spark), ao passo em que
 fornece um conjunto de funcionalidades que permitem ao usuário final configurar
 a atuação dos \textit{streams}, semelhante a outros serviços existentes,
 como o Amazon AWS\footnote{\url{https://aws.amazon.com/kinesis/analytics/}}.
@@ -21,22 +35,16 @@ parâmetros desejados; (2) criar esse \textit{stream} no Shock; (3) injetar
 esse \textit{stream} no Shock; (4) e iniciar o processamento do
 \textit{stream}. O Forensic abstrai esses 4 passos, facilitando o uso
 das ferramentas e da plataforma, aproximando usuários finais que não tenham
-grande conhecimento do código-fonte do Shock. A Figura \ref{fig:forensicparams} apresenta
-a página de visualização e edição de um \textit{stream}, onde é possível
-conferir os parâmetros configurados para cada estágio.
+grande conhecimento do código-fonte do Shock. A Figura \ref{fig:forensicparams}
+apresenta a página de visualização e edição de um \textit{stream}, e a Figura
+\ref{fig:reports} a página de visualização de resultados processados. Os
+resultados de cada dado são mostrados separadamente, onde o título representa
+a capacidade do recurso, e o texto centralizado o valor da respectiva capacidade.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{figuras/pipeline.png}
-    \caption{Página de configuração de um \textit{stream}. Os parâmetros
-obrigatórios (\textit{topic e brokers}) foram configurados.}
-  \label{fig:forensicparams}
-\end{figure}
-
-Com o propósito de aproximar as soluções que desenvolvemos a cenários mais reais,
-separamos dois casos de uso para serem resolvidos com uso do Forensic e do
-Shock, interagindo com o InterSCity, utilizando como bases alguns coletores de
-dados de São
+Com o propósito de aproximar as soluções que desenvolvemos aos cenários mais
+reais, separamos dois casos de uso para serem resolvidos com uso do Forensic e do
+Shock. Em cada um desses casos ocorre uma interação entre o InterSCity, Shock e
+Forensic, utilizando como produtor de dados alguns coletores de São
 Paulo\footnote{\url{https://github.com/lucaskanashiro/collect_sp_data}}. De
 maneira geral, os casos de uso abrangem os conceitos citados anteriormente,
 como o \textit{cast} de dados, filtros, dentre outros.
@@ -45,7 +53,8 @@ como o \textit{cast} de dados, filtros, dentre outros.
 
 O primeiro caso que separamos é o de regiões que apresentam qualidade do ar
 insatisfatória, utilizando como base os dados da
-CETESB\footnote{\url{http://sistemasinter.cetesb.sp.gov.br/Ar/php/ar_resumo_hora.php}}.
+CETESB\footnote{\url{http://sistemasinter.cetesb.sp.gov.br/Ar/php/ar_resumo_hora.php}}
+(Companhia Ambiental do Estado de São Paulo).
 A solução desse caso de uso pode ser divida em três etapas:
 \begin{enumerate}
     \item Coletar os dados;
@@ -67,6 +76,9 @@ Resource Adaptor. Adaptamos o \textit{script} mencionado no passo anterior
 para que passasse a fazer requisições REST ao Resource Adaptor do InterSCity,
 possibilitando o registro de recursos e o envio dos dados.
 
+\lstinputlisting[label={lst:flush1},language=elixir,caption={Consumo dos dados via \textit{websocket}
+caso o evento seja \textit{new\_report}.}]{editaveis/arquivos/channel.ex}
+
 O terceiro passo, de configuração do \textit{stream}, é feito através do Forensic.
 Um \textit{stream} deve ser criado na interface, e configurado para uso dos
 estágios \textit{Kafka Ingestion}, \textit{Kafka Cast} e \textit{Filter}.
@@ -78,15 +90,14 @@ específico apresentado na Listagem \ref{lst:flush1}. Quando esse
 que lê de um repositório específico no formato Parquet, e publica no Forensic
 via \textit{websocket}.
 
-\lstinputlisting[float,label={lst:flush1},floatplacement=H,language=elixir,caption={Consumo dos dados via \textit{websocket}
-caso o evento seja \textit{new\_report}.}]{editaveis/arquivos/channel.ex}
+\begin{figure}[hbt]
+  \centering
+  \includegraphics[width=\textwidth]{figuras/parametros.png}
+  \caption{Parâmetros do primeiro caso.}
+  \label{fig:case1}
+\end{figure}
 
-Após o \textit{stream} ser criado e os estágios selecionados, basta
-configurar os parâmetros e transferir as definições para o Shock. A Figura
-\ref{fig:case1} apresenta uma tela do Forensic com o \textit{stream} já
-configurado, utilizando os valores presentes na Tabela \ref{tab:case1}.
-
-\begin{table}[]
+\begin{table}[hbt]
     \centering
     \caption{Parâmetros do \textit{stream} utilizado no primeiro caso de uso.}
     \label{tab:case1}
@@ -101,30 +112,17 @@ configurado, utilizando os valores presentes na Tabela \ref{tab:case1}.
     \end{tabular}
 \end{table}
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{figuras/parametros.png}
-  \caption{Parâmetros do primeiro caso.}
-  \label{fig:case1}
-\end{figure}
+Após o \textit{stream} ser criado e os estágios selecionados, basta
+configurar os parâmetros e transferir as definições para o Shock. A Figura
+\ref{fig:case1} apresenta uma tela do Forensic com o \textit{stream} já
+configurado, utilizando os valores presentes na Tabela \ref{tab:case1}.
 
 Por fim, basta seguir os passos de transferência que o Forensic sugere (\textit{Create
 Stream, Configure Stream, Inject Pipeline e Start Streaming}), presentes no
 topo da Figura \ref{fig:case1}. O Shock então começará o processamento dos
 dados, e a próxima vez que o usuário visitar a página de alertas e requisitar
 atualização, aparecerão os dados insatisfatórios da qualidade do ar da cidade
-de São Paulo. A Figura \ref{fig:reports} apresenta a página de visualização de
-resultados processados. Na figura, cada dado é mostrado separadamente, onde o
-título representa a capacidade do recurso, e texto centralizado o valor da
-respectiva capacidade.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth]{figuras/latest-reports.png}
-    \caption{Página de visualização de resultados.}
-  \label{fig:reports}
-\end{figure}
-
+de São Paulo.
 
 \section{CASO DE USO 2 - MÉDIA DE BICICLETAS LIVRES NA REGIÃO COM COMBINAÇÃO DE STREAMS}
 
@@ -145,6 +143,34 @@ que requisita dados à API do CityBik, via REST. Após a ingestão desses dados,
 para o Passo 2, o \textit{script} se comunica com o Resource Adaptor,
 publicando os dados no InterSCity.
 
+\begin{table}[hbt]
+    \centering
+    \caption{Parâmetros do primeiro \textit{stream}.}
+    \label{tab:case2-1}
+    \begin{tabular}{|c|c|c|}
+        \hline
+        \textit{\textbf{Estágio}}                   & \textbf{Parâmetro} & \textbf{Valor}                      \\ \hline
+        \multirow{2}{*}{\textit{Kafka Ingestion}} & \textit{topic}     & \textit{interscity}                 \\ \cline{2-3} 
+                                                  & \textit{brokers}   & \textit{kafka:9092}                 \\ \hline
+                                                  \textit{Kafka Cast}                       & -                  & -                                   \\ \hline
+                                                  \textit{Filter}                           & \textit{query}     & \textit{capability == free\_bikes}  \\ \hline
+                                                  \textit{Parquet Publishing}               & \textit{path}      & \textit{/interscity-data/freebikes} \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[hbt]
+\centering
+    \caption{Parâmetros do segundo \textit{stream}.}
+\label{tab:case2-2}
+\begin{tabular}{|c|c|c|}
+\hline
+\textit{\textbf{Estágio}}    & \textbf{Parâmetro} & \textbf{Valor}                      \\ \hline
+\textit{Parquet Ingestion} & \textit{path}      & \textit{/interscity-data/freebikes} \\ \hline
+\textit{Mean}              & -                  & -                                   \\ \hline
+\textit{Memory Publishing} & \textit{table}     & \textit{avg}                        \\ \hline
+\end{tabular}
+\end{table}
+
 Para o Passo 3, devem ser configurados dois \textit{streams}. O primeiro deve
 conter os estágios \textit{Kafka Ingestion}, \textit{Kafka Cast},
 \textit{Filter} e \textit{Parquet Publishing}, de modo a ingerir novos dados
@@ -160,32 +186,3 @@ utilizados no primeiro \textit{stream} estão apresentados na Tabela
 configurações para o Shock, semelhante ao ocorrido no caso de uso anterior,
 os dois \textit{streams} começam o processamento dos dados, retornando para o
 Forensic a média de bicicletas disponíveis na região.
-
-\begin{table}[]
-    \centering
-    \caption{Parâmetros do primeiro \textit{stream}.}
-    \label{tab:case2-1}
-    \begin{tabular}{|c|c|c|}
-        \hline
-        \textit{\textbf{Estágio}}                   & \textbf{Parâmetro} & \textbf{Valor}                      \\ \hline
-        \multirow{2}{*}{\textit{Kafka Ingestion}} & \textit{topic}     & \textit{interscity}                 \\ \cline{2-3} 
-                                                  & \textit{brokers}   & \textit{kafka:9092}                 \\ \hline
-                                                  \textit{Kafka Cast}                       & -                  & -                                   \\ \hline
-                                                  \textit{Filter}                           & \textit{query}     & \textit{capability == free\_bikes}  \\ \hline
-                                                  \textit{Parquet Publishing}               & \textit{path}      & \textit{/interscity-data/freebikes} \\ \hline
-    \end{tabular}
-\end{table}
-
-\begin{table}[]
-\centering
-    \caption{Parâmetros do segundo \textit{stream}.}
-\label{tab:case2-2}
-\begin{tabular}{|c|c|c|}
-\hline
-\textit{\textbf{Estágio}}    & \textbf{Parâmetro} & \textbf{Valor}                      \\ \hline
-\textit{Parquet Ingestion} & \textit{path}      & \textit{/interscity-data/freebikes} \\ \hline
-\textit{Mean}              & -                  & -                                   \\ \hline
-\textit{Memory Publishing} & \textit{table}     & \textit{avg}                        \\ \hline
-\end{tabular}
-\end{table}
-

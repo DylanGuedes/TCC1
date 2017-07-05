@@ -13,6 +13,15 @@ análise de dados históricos, desde que tenha ocorrido o pré-processamento.
 Essa decisão resultou na necessidade de escolha de uma tecnologia de
 processamento \textit{streaming} e de um \textit{broker} adequado.
 
+\begin{figure}[hbt]
+  \centering
+    \includegraphics[scale=0.5]{figuras/kappa_tools2.png}
+  \caption{Pilha de tecnologias utilizadas - Apache Kafka e Apache Spark, e suas
+    interações com o InterSCity.}
+  \label{fig:stack}
+\end{figure}
+
+
 Escolhemos o \textbf{Apache Spark} como tecnologia de \textit{streaming}
 a ser usada, por dispor nativamente de biblioteca de clusterização
 e aprendizagem de máquina. O Spark ainda facilita, caso necessário, a
@@ -29,60 +38,59 @@ microsserviços do InterSCity. A Figura \ref{fig:stack} ilustra a pilha de
 tecnologias que deve compor a Arquitetura Kappa no InterSCity e as principais
 relações entre os diferentes serviços.
 
-\begin{figure}
-  \centering
-    \includegraphics[scale=0.5]{figuras/kappa_tools2.png}
-  \caption{Pilha de tecnologias utilizadas - Apache Kafka e Apache Spark, e suas
-    interações com o InterSCity.}
-  \label{fig:stack}
-\end{figure}
-
 \section{IMPLEMENTAÇÃO}
 
 Dividimos a implementação da Arquitetura Kappa em três etapas:
-(i) configuração do ambiente, contemplando as ferramentas escolhidas;
-(ii) ligações entre os diferentes serviços, tornando possível a publicação de
+(1) configuração do ambiente, contemplando as ferramentas escolhidas;
+(2) ligações entre os diferentes serviços, tornando possível a publicação de
     mensagens no Kafka e sendo possível seu processamento no Spark; e
-(iii) disponibilização de \textit{hooks} que possam ser estendidos futuramente,
+(3) disponibilização de \textit{hooks} que possam ser estendidos futuramente,
     possibilitando a criação de um \textit{pipeline de dados} customizável.
+
 Durante a implementação do novo serviço de processamento de dados para o
 InterSCity desenvolvemos o \textbf{Shock}, responsável por abstrair as
 comunicações entre as diferentes ferramentas e trazer a extensibilidade mencionada
-na terceira etapa da implementação.
+na terceira etapa da implementação. O Shock é uma aplicação que compõe o
+novo serviço de processamento, junto com outras aplicações utilizadas, e
+possibilita que usuários que não conhecem o Apache Spark consigam requisitar
+processamento e análise de \textit{streams} de dados.
 
-\begin{figure}
+\begin{figure}[hbt]
   \centering
     \includegraphics[scale=0.45]{figuras/shock_usage.png}
     \caption{Novo ciclo de vida da plataforma, com relação ao novo serviço de processamento.}
   \label{fig:shock_usage}
 \end{figure}
 
-A Figura \ref{fig:shock_usage} ilustra o novo fluxo completo do InterSCity com
-a adição do novo serviço de processamento de dados. O início do fluxo (passos 1
-ao 3) continua o mesmo, e foi detalhado na Seção \ref{sec:architecture}. As
-mudanças começam quando o (4) Resource Adaptor passa a publicar a chegada de
-novos dados no Shock através do Kafka, promovendo extensão ao InterSCity.
-Aplicações (5) interagem com o Shock via Kafka, construindo o \textit{pipeline}
-de um \textit{stream}, definindo as operações a serem executadas.  Por fim, os
-resultados do Shock e do Data Collector (6) serão disponibilizados, podendo ser
-consumidos por aplicações como o microsserviço Resource Viewer, que (7)
-apresenta dados ao usuário final.
+A Figura \ref{fig:shock_usage} ilustra o novo fluxo completo do InterSCity com a
+adição do novo serviço de processamento de dados. O início do fluxo (passos 1 ao
+3) continua o mesmo, e começa com (1) um recurso IoT se registrando na plataforma
+através da interação com o Resource Adaptor. O Resource Adaptor (2) cadastra o
+recurso no microsserviço Resource Catalog (3) e informa o UUID que deve ser
+utilizado pelo recurso. O recurso passa a enviar dados ao Resource Adaptor, que
+(4) publica a chegada dos novos dados no Shock através do Kafka, promovendo
+extensão ao InterSCity.  Aplicações (5) interagem com o Shock via Kafka,
+construindo o \textit{pipeline} de um \textit{stream}, definindo as operações a
+serem executadas.  Por fim, os resultados do Shock e do Data Collector (6)
+serão disponibilizados, podendo ser consumidos por aplicações como o
+microsserviço Resource Viewer, que (7) apresenta dados ao usuário final.
 
-Assim como seguido pelo time do InterSCity, utilizamos o Docker na gerência de
+Assim como seguido pela equipe do InterSCity, utilizamos o Docker na gerência de
 configuração do novo serviço. A configuração do Spark que havia sido feita pelo
 time do InterSCity na criação do DataProcessor foi reutilizada, e configuramos
 um contêiner com o Kafka. Por fim, ligamos os contêineres configurados com o
 microsserviço Resource Adaptor, permitindo assim a interação entre o InterSCity
 e as ferramentas definidas para uso.
 
-Iniciamos a ligação entre os projetos com uma adaptação no microsserviço
-Resource Adaptor, que com a mudança, passou a publicar em um tópico específico
-no Kafka a atualização de novos dados. Essa adaptação não trouxe mudanças
+Iniciamos a ligação entre os projetos, etapa 1, com uma adaptação no
+microsserviço Resource Adaptor, que com a mudança, passou a publicar em um tópico
+específico no Kafka a chegada de novos dados. Essa adaptação não trouxe mudanças
 significativas no InterSCity, não afetando o fluxo usual da plataforma.
-Desenvolvemos o Shock, responsável por receber mensagens em tópicos
-específicos do Kafka e passá-los ao Spark Streaming. O Shock gerencia a
-execução de \textit{streams} do Spark, permitindo que usuários terceiros
-configurem \textit{streams} no Spark sem ter conhecimento da ferramenta.
+Após, solucionamos as etapas 2 e 3 através do desenvolvimento do Shock,
+responsável por receber mensagens em tópicos específicos do Kafka e passá-los
+ao Spark Streaming. O Shock gerencia a execução de \textit{streams} do Spark,
+permitindo que usuários terceiros configurem \textit{streams} no Spark sem ter
+conhecimento técnico da ferramenta.
 
 \section{SHOCK}
 
@@ -92,13 +100,15 @@ de processamento de dados pode ser encontrado em um \textit{fork} do serviço
 original\footnote{\url{https://gitlab.com/DGuedes/data-processor}}. O Shock
 abstrai o uso das diferentes ferramentas e pode ser customizado
 por serviços externos que definem e configuram \textit{streams} para serem
-executados. O arquitetura do Shock apresenta pontos de estensão, e possui
+executados. A arquitetura do Shock apresenta pontos de estensão e possui
 um \textit{handler} para a Arquitetura Kappa
 desenvolvido\footnote{\url{https://gitlab.com/DGuedes/shock/blob/master/shock/handlers.py}},
 mas caso seja desejado o uso de outra estratégia, basta implementar um novo
 \textit{handler}.
 
-\begin{figure}
+\pagebreak
+
+\begin{figure}[hbt]
   \centering
     \includegraphics[scale=0.45]{figuras/shock.png}
     \caption{Ciclo de vida do Shock dentro do InterSCity.}
@@ -119,9 +129,16 @@ chegada de novos dados de ônibus, para que esses dados sejam (4) publicados em
 um tópico específico do Kafka pelo Resource Adaptor. Após serem disponibilizados
 no Kafka, os dados ficam disponíveis para serem utilizados pelo Shock, que os (5)
 recebe nos \textit{streams} configurados para ingerir dados, e os processa
-através do \textit{pipeline} construído no Passo 2. Por fim, após o
+através do \textit{pipeline} construído no passo 2. Por fim, após o
 processamento dos dados, o Shock pode (6) disponibilizar os resultados do
 processamento, que pode ser reaproveitado por aplicações terceiras.
+
+\begin{figure}[hbt]
+  \centering
+  \includegraphics[scale=0.35]{figuras/arquiteturaforensic.png}
+  \caption{Padrão \textit{ingest, setup, analyze e publish.}}
+  \label{fig:ingeststore}
+\end{figure}
 
 Do ponto de vista da implementação, utilizamos no Shock a arquitetura de camadas
 \textit{ingestão, tratamento, análise e publicação}, cujas traduções em inglês são
@@ -147,12 +164,9 @@ da ação desejada, e o segundo, ``arg2'', os argumentos da ação. Um
 deve ser enviada caso queira-se o registro de um estágio de ingestão no
 \textit{stream} \textit{mystream} utilizando a estratégia \textit{socketIngestion}.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=\textwidth]{figuras/arquiteturaforensic.png}
-  \caption{Padrão \textit{ingest, setup, analyze e publish.}}
-  \label{fig:ingeststore}
-\end{figure}
+\lstinputlisting[label={lst:ingestion},caption={
+  Ingestão de dados no Shock via \textit{socket} e Kafka.
+  }]{editaveis/arquivos/ingestion.py}
 
 O primeiro estágio de um \textit{stream}, a \textit{\textbf{ingestão}}, trata-se da
 ingestão dos dados a partir de alguma fonte, como algum tópico do Kafka, ou
@@ -164,9 +178,9 @@ exemplo, é necessário configurar o endereço do \textit{broker} e os tópicos
 que serão utilizados. A Listagem \ref{lst:ingestion} apresenta o código-fonte
 de duas estratégias de ingestão disponíveis no Shock.
 
-\lstinputlisting[float,floatplacement=H,label={lst:ingestion},caption={
-  Ingestão de dados no Shock via \textit{socket} e Kafka.
-  }]{editaveis/arquivos/ingestion.py}
+\lstinputlisting[label={lst:setup},caption={
+  Tratamento de dados no Shock via \textit{cast}.
+}]{editaveis/arquivos/store.py}
 
 O segundo estágio de um \textit{stream} é chamado \textit{\textbf{preparo}} e tem o papel
 de ajuste e limpeza dos dados para que sejam utilizados pelos \textit{streams}
@@ -177,9 +191,9 @@ o Shock apresenta somente preparo de dados via \textit{cast}, que são essenciai
 no uso do InterSCity e de consumo do Kafka, apresentados na Listagem
 \ref{lst:setup}.
 
-\lstinputlisting[float,floatplacement=H,label={lst:setup},caption={
-  Tratamento de dados no Shock via \textit{cast}.
-}]{editaveis/arquivos/store.py}
+\lstinputlisting[label={lst:analyze},caption={
+  Operações de análise de dados no Shock.
+}]{editaveis/arquivos/processing.py}
 
 O terceiro estágio de um \textit{stream}, a \textit{\textbf{análise}}, é o
 estágio principal do processamento, e permite filtros, agregações e cálculos.
@@ -192,9 +206,11 @@ requisição no Kafka com o conteúdo \small{\textbf{processing;\{"stream": "mys
 'value' == 31"\}}}. Algumas possibilidades de estágios de análise
 estão contidos na Listagem \ref{lst:analyze}.
 
-\lstinputlisting[float,floatplacement=H,label={lst:analyze},caption={
-  Operações de análise de dados no Shock.
-}]{editaveis/arquivos/processing.py}
+\pagebreak
+
+\lstinputlisting[label={lst:publish},caption={
+  Estratégias de publicação de resultados presentes no Shock.
+}]{editaveis/arquivos/sinks.py}
 
 O último estágio de um \textit{stream}, conhecido como estágio de
 \textit{\textbf{publicação}}, é o estágio
@@ -211,11 +227,7 @@ Categorizamos no Shock o nome \textit{sink} para as diferentes estratégias de
 publicação, que é o nome utilizado pelo Spark. A Listagem \ref{lst:publish}
 apresenta as estratégias de publicação em \textit{console}, Parquet e memória.
 
-\lstinputlisting[float,floatplacement=H,label={lst:publish},caption={
-  Estratégias de publicação de resultados presentes no Shock.
-}]{editaveis/arquivos/sinks.py}
-
-\begin{figure}
+\begin{figure}[hbt]
   \centering
     \includegraphics[scale=0.5]{figuras/ligacoes.png}
   \caption{Comunicação entre o Shock e aplicações.}

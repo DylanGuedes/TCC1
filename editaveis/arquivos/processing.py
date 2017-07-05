@@ -4,7 +4,7 @@ def streamFilter(stream: SparkDataFrame, args: dict) -> SparkDataFrame:
     if (query):
         return stream.where(query)
     else:
-        raise('Missing required param `query`')
+        raise('Missing required param "query"')
 
 
 def mean(stream: SparkDataFrame, args: dict) -> SparkDataFrame:

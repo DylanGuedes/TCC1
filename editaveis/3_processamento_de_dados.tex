@@ -11,7 +11,9 @@ relatado, o InterSCity carece de um serviço de processamento de dados mais
 adequado, e a partir dos estudos que apresentamos neste capítulo, tomamos
 decisões a respeito do novo serviço.
 
-Levantamos duas arquiteturas, Lambda e Kappa, e tecnologias que abranjam duas
+Levantamos duas arquiteturas: a Lambda, que é mais difundida, e a Kappa,
+que escolhemos para utilização no novo serviço de processamento, e que é
+uma resposta a arquitetura Lambda. Definimos também tecnologias que abranjam duas
 formas de processamento: \textit{batch} e
 \textit{streaming}. No processamento \textit{batch} os dados são utilizados
 em conjunto e armazenados de uma forma específica antes de serem escalonados
@@ -65,7 +67,7 @@ fim, a camada \textit{speed} condensa os resultados de seu processamento em
 da camada \textit{speed} são dispensados, após um \textit{batch} terminar seu
 processamento \cite{marz2015}.
 
-\begin{figure}
+\begin{figure}[hbt]
   \centering
     \includegraphics[width=\textwidth]{figuras/lambda-lifecycle.png}
     \caption{Ciclo de vida na Arquitetura Lambda. Baseado em: \citeonline{marz2015}.}
@@ -85,8 +87,8 @@ Caso uma consulta seja feita ocorrerá uma (6) soma entre os resultados
 dos \textit{batch views} e \textit{real-time views}, representando o resultado
 desejado para a consulta \cite{marz2015}.
 
-A Arquitetura Lambda garante sua resiliência através da \textit{isolação de
-complexidade}, que é obtida graças a separação entre camadas \textit{batch}
+A Arquitetura Lambda garante sua resiliência através do \textit{isolamento de
+complexidade}, que é obtido graças a separação entre camadas \textit{batch}
 e \textit{speed} \cite{marz2015}. A resiliência é obtida pois, uma vez que os
 resultados são processados na camada \textit{batch}, os resultados da camada
 \textit{speed} podem ser descartados. Essa técnica é essencial, já que o
@@ -109,9 +111,9 @@ A Arquitetura Kappa é um padrão de projeto de \textit{software}, e surgiu apó
 questionamentos\footnote{\url{https://www.oreilly.com/ideas/questioning-the-lambda-architecture}}
 quanto a complexidade da Arquitetura Lambda. Kappa é uma arquitetura recente (2014) e
 simples, e se baseia somente no uso da \textbf{camada \textit{speed}}
-\cite{seyvet2016}. É guiada por quatro princípios: (i) tudo é um
-\textit{stream}; (ii) os dados devem ser imutáveis; (iii) somente um
-\textit{framework} para processamento deve ser utilizado; (iv) os dados devem
+\cite{seyvet2016}. É guiada por quatro princípios: (1) tudo é um
+\textit{stream}; (2) os dados devem ser imutáveis; (3) somente um
+\textit{framework} para processamento deve ser utilizado; (4) os dados devem
 armazenados, possibilitando a reprodução do estado \cite{seyvet2016}.
 
 Fazendo uso da observação de que o \textit{log} é um conjunto de informações
@@ -121,11 +123,11 @@ para atingir os quatro princípios citados anteriormente \cite{kreps2014}. O
 latência, com a possibilidade de acesso de dados atuais e históricos
 \cite{forgeat2015}. Caso o processamento seja iniciado após o fluxo de dados já
 ter começado, duas opções são possíveis: processar o \textit{log} do início,
-tornando disponível os dados históricos, ou processar a partir do final,
+tornando disponível os dados históricos; ou processar a partir do final,
 não tendo acesso aos dados históricos, mas tendo latência mínima
 \cite{kreps2014}.
 
-\begin{figure}
+\begin{figure}[hbt]
   \centering
     \includegraphics[scale=0.5]{figuras/kappa_architecture.png}
     \caption{Funcionamento da Arquitetura Kappa. Baseado em: \citeonline{seyvet2016}.}
@@ -164,7 +166,7 @@ for publicada, agindo como consumidores. O \textit{broker} gerencia esse
 processo, e tem a tarefa de transferir as mensagens de um emissor para
 receptores.
 
-\begin{figure}
+\begin{figure}[hbt]
   \centering
     \includegraphics[scale=0.5]{figuras/broker.png}
     \caption{Funcionamento do \textit{broker}.}
@@ -186,23 +188,22 @@ disponibilizar para as ferramentas de processamento.
 
 De maneira geral, as duas opções (Kappa e Lambda) parecem funcionar bem em
 cidades inteligentes. A Kappa pode ser vista como uma Arquitetura Lambda mais
-pontual e simples, que se sustenta em um menor conjunto de ferramentas e
+simples, que se sustenta em um menor conjunto de ferramentas e
 conceitos, enquanto a Lambda pode ser vista como uma opção segura,
 capaz de lidar com quase todos os problemas do ecossistema de cidades
-inteligentes.
+inteligentes. Decidimos pela Kappa, embora as duas arquiteturas apresentem
+vantagens, sendo o contexto um dos fatores primordiais.
 
-Logo, cada uma das arquiteturas apresenta vantagens, mas o contexto é
-determinante na escolha da arquitetura correta para um dado problema. A
-Arquitetura Kappa, sem a reprodução dos dados, permite somente o uso de
+A Arquitetura Kappa, sem a reprodução dos dados, permite somente o uso de
 algoritmos incrementais ou que não careçam analisar toda a massa de dados ao
-mesmo tempo.  Em um algoritmo de aprendizagem de máquina, por exemplo, a Kappa
+mesmo tempo. Em um algoritmo de aprendizagem de máquina, por exemplo, a Kappa
 pode funcionar, caso o treino do modelo seja incremental. Outro exemplo
 seria o de filtros, como a busca por um termo específico dentro de um texto -
 resultados anteriores não fazem diferença, e a Kappa mesmo sem a reprodução
 dos dados resolveria bem. Contudo, caso seja desejado uma operação em toda
 a massa de dados, como uma consulta em busca de um dado termo, a Kappa
 não funciona, enquanto a Lambda pode escalonar um \textit{job} específico para essa
-tarefa sem maiores problemas. Ou seja, pela Lambda suportar algoritmos e tarefas
+tarefa sem maiores problemas. Dessa forma, pela Lambda suportar algoritmos e tarefas
 diferentes entre a camada \textit{batch} e a \textit{speed}, uma maior
 flexibilidade fica disponível, o que pode ser importante para certos contextos.
 
@@ -219,17 +220,16 @@ os microsserviços existentes da plataforma.
 
 \subsection{Ferramentas de Processamento Batch}
 
-Analisamos duas ferramentas de processamento \textit{batch}: o
-\textbf{Apache Hadoop MapReduce}, precursor no ecossistema \textit{Big Data},
-e o \textbf{Apache Spark}, ferramenta mais recente. O Hadoop MapReduce é uma das
-ferramentas que compõe o ecossistema do Hadoop, e já foi utilizado em contextos
-extremos\footnote{Lista das empresas que utilizam ou já
-utilizaram o Hadoop: \url{https://wiki.apache.org/hadoop/PoweredBy}}, atuando
-com excelência em cenários de grande massa de dados \cite{zaharia2008}, sendo
-uma escolha segura para compor a camada \textit{batch} da Arquitetura
-Lambda. Só dispõe de API nativa para linguagem Java, de modo que o uso do Hadoop
-MapReduce no InterSCity deva utilizar o uso da saída e entrada padrão do
-sistema operacional para que seja possível o uso da linguagem Ruby, linguagem
+Analisamos duas ferramentas de processamento \textit{batch}: o \textbf{Apache
+Hadoop MapReduce}, precursor no ecossistema \textit{Big Data}, e o
+\textbf{Apache Spark}, que optamos para compor o novo serviço de processamento.
+O Hadoop MapReduce é uma das ferramentas que compõe o ecossistema do Hadoop, e
+já foi utilizado, com excelência, em cenários de grande massa de
+dados\footnote{Lista das empresas que utilizam ou já utilizaram o Hadoop:
+\url{https://wiki.apache.org/hadoop/PoweredBy}} \cite{zaharia2008}.
+Dispõe apenas de API nativa para linguagem Java, de modo que o uso do Hadoop
+MapReduce no InterSCity deva utilizar a saída e entrada padrão do
+Sistema Operacional para que seja possível o desenvolvimento em Ruby, linguagem
 de maior domínio pelo time do InterSCity.
 
 Um dos questionamentos feitos ao Hadoop MapReduce é em relação ao constante acesso e
@@ -241,17 +241,6 @@ de \textit{micro-batches} \cite{arsalan2014}. Os \textit{micro-batches} têm tem
 definidos em código, de modo que seja possível definir tempos de
 \textit{micro-batches} pequenos o suficiente para que seja considerado
 tempo-real\footnote{O tempo-real mencionado é sempre o \textit{soft real-time}.}.
-
-Outras características importantes do Spark para o contexto do
-InterSCity são: API nativa em Python, Scala, Java e R; biblioteca de
-\textit{streaming}, permitindo que o Spark seja utilizado também na camada
-\textit{speed} da Arquitetura Lambda; e biblioteca de clusterização e
-aprendizagem de máquina, que pode ser útil para compor um futuro \textit{pipeline
-de dados} do InterSCity. A Tabela \ref{tab:graysort2014results} apresenta
-um comparativo entre a performance do Hadoop MapReduce e do Spark, pela
-competição SortBenchmark\footnote{\url{http://sortbenchmark.org/}}. Na
-competição, o Spark apresentou uma performance três vezes maior que o Hadoop
-MapReduce, utilizando dez vezes menos recursos.
 
 \begin{table}[!htbp]
     \centering
@@ -274,6 +263,17 @@ MapReduce, utilizando dez vezes menos recursos.
     }
 \end{table}
 
+Outras características importantes do Spark para o contexto do
+InterSCity são: API nativa em Python, Scala, Java e R; biblioteca de
+\textit{streaming}, permitindo que o Spark seja utilizado também na camada
+\textit{speed} da Arquitetura Lambda; e biblioteca de clusterização e
+aprendizagem de máquina, que pode ser útil para compor um futuro \textit{pipeline
+de dados} do InterSCity. A Tabela \ref{tab:graysort2014results} apresenta
+um comparativo entre o desempenho do Hadoop MapReduce e do Spark, pela
+competição SortBenchmark\footnote{\url{http://sortbenchmark.org/}}. Na
+competição, o Spark apresentou um desempenho três vezes maior que o Hadoop
+MapReduce, utilizando dez vezes menos recursos.
+
 \footnotetext{\url{https://databricks.com/blog/2014/11/05/spark-officially-sets-a-new-record-in-large-scale-sorting.html}}
 
 \subsection{Ferramentas de Processamento Streaming}
@@ -281,9 +281,10 @@ MapReduce, utilizando dez vezes menos recursos.
 Analisamos duas ferramentas de processamento \textit{streaming}: O
 \textbf{Apache Storm}, escrito por Nathan Marz, criador da Arquitetura
 Lambda, e o \textbf{Apache Spark}, analisado anteriormente como ferramenta de
-processamento \textit{batch}. O Apache Storm permite o uso de qualquer
-linguagem de programação que interaja com a saída e entrada padrão do sistema
-operacional, e sendo sugerido por Nathan Marz em seu livro sobre a Arquitetura
+processamento \textit{batch}, e que escolhemos para uso no novo serviço de
+processamento. O Apache Storm permite o uso de qualquer
+linguagem de programação que interaja com a saída e entrada padrão do Sistema
+Operacional, e sendo sugerido por Nathan Marz em seu livro sobre a Arquitetura
 Lambda \cite{marz2015}, se faz uma opção segura para compor a camada
 \textit{speed}.
 
@@ -297,12 +298,12 @@ chegam novos dados. Essa diferença resulta em um tempo de latência notável
 entre os dois, onde o Spark apresenta tempo de latência com pouca variância
 conforme o volume de dados aumenta, enquanto o Storm apresenta latência mínima
 com baixo volume de dados, mas que vai aumentando conforme o volume aumenta.
-Um estudo feito relatou a diferença de performance entre as duas
+Um estudo feito relatou a diferença de desempenho entre as duas
 ferramentas\footnote{\url{http://xinhstechblog.blogspot.com.br/2014/06/storm-vs-spark-streaming-side-by-side.html}},
 contudo, o cenário aplicado utilizava pequena massa de dados, favorável ao
 Storm.
 
-O Storm apresenta como vantagem em relação ao Spark a performance
+O Storm apresenta como vantagem em relação ao Spark o desempenho
 superior e a flexibilidade de uso da linguagem Ruby, já utilizada pelo time
 do InterSCity, porém o Spark conta com a possibilidade de processamento
 \textit{batch}, integração nativa com ferramentas produtoras e o acesso a
@@ -326,11 +327,12 @@ composições mais complexas e a possibilidade de uso de
 que suportam, por exemplo,
 federação\footnote{\url{https://www.rabbitmq.com/federation.html}}.
 
-O Apache Kafka é uma ferramenta mais nova\footnote{O RabbitMQ teve
+O Apache Kafka, que foi a ferramenta que decidimos para compor o novo serviço,
+é uma ferramenta mais nova\footnote{O RabbitMQ teve
 sua primeira \textit{release} em 2007, e o Apache Kafka em 2011.}, e também é
-utilizado em contextos extremos por várias
+utilizado em produção por diversas
 empresas\footnote{\url{https://cwiki.apache.org/confluence/display/KAFKA/Powered+By}}.
-Tendo como um dos principais diferenciais a performance e a escalabilidade,
+Tendo como principais diferenciais o desempenho e a escalabilidade,
 recentemente foi capaz de lidar com mais de 1.4 trilhões de mensagens diárias,
 distribuídas sobre 1400 nós \cite{koshy2016}. Um outro diferencial relevante
 entre o Kafka e os outros concorrentes é o suporte padrão a integração entre
@@ -338,11 +340,12 @@ entre o Kafka e os outros concorrentes é o suporte padrão a integração entre
 o Kafka conta com sistema de tolerância a falhas e suporte a várias linguagens de
 programação\footnote{\url{https://cwiki.apache.org/confluence/display/KAFKA/Clients}}.
 
-Ambas as opções são sólidas e adequadas para o uso do InterSCity. A
-performance entre os dois já foi comparada, e embora o Kafka tenha tido
-performance
+Ambas as opções são sólidas e adequadas para o uso do InterSCity. O
+desempenho entre os dois já foi comparado, e embora o Kafka tenha tido desempenho
 superior\footnote{\url{http://www.cloudhack.in/2016/02/29/apache-kafka-vs-rabbitmq/}},
-a performance do RabbitMQ não compromete o uso no InterSCity. Assim, os pontos
+o desempenho do RabbitMQ não compromete o uso no InterSCity. Assim, os pontos
 cruciais que levamos em conta na escolha de tecnologia foram: o fato do Kafka
 ter suporte a \textit{log} e \textit{handler} nativo para o Spark, e o RabbitMQ
 já ser utilizado pelo InterSCity e ter o uso estendido via \textit{plugins}.
+Assim, a escolha por qualquer uma dentre as duas tecnologias parece certa, mas
+ao final optamos pelo Kafka, pelos pontos citados.
