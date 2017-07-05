@@ -182,6 +182,30 @@ na implementação das arquiteturas Kappa e Lambda, sendo o
 \textit{broker} o responsável por recuperar novas informações e as
 disponibilizar para as ferramentas de processamento.
 
+\section{COMPARATIVO ENTRE ARQUITETURAS}
+
+De maneira geral, as duas opções (Kappa e Lambda) parecem funcionar bem em
+cidades inteligentes. A Kappa pode ser vista como uma Arquitetura Lambda mais
+pontual e simples, que se sustenta em um menor conjunto de ferramentas e
+conceitos, enquanto a Lambda pode ser vista como uma opção segura,
+capaz de lidar com quase todos os problemas do ecossistema de cidades
+inteligentes.
+
+Logo, cada uma das arquiteturas apresenta vantagens, mas o contexto é
+determinante na escolha da arquitetura correta para um dado problema. A
+Arquitetura Kappa, sem a reprodução dos dados, permite somente o uso de
+algoritmos incrementais ou que não careçam analisar toda a massa de dados ao
+mesmo tempo.  Em um algoritmo de aprendizagem de máquina, por exemplo, a Kappa
+pode funcionar, caso o treino do modelo seja incremental. Outro exemplo
+seria o de filtros, como a busca por um termo específico dentro de um texto -
+resultados anteriores não fazem diferença, e a Kappa mesmo sem a reprodução
+dos dados resolveria bem. Contudo, caso seja desejado uma operação em toda
+a massa de dados, como uma consulta em busca de um dado termo, a Kappa
+não funciona, enquanto a Lambda pode escalonar um \textit{job} específico para essa
+tarefa sem maiores problemas. Ou seja, pela Lambda suportar algoritmos e tarefas
+diferentes entre a camada \textit{batch} e a \textit{speed}, uma maior
+flexibilidade fica disponível, o que pode ser importante para certos contextos.
+
 \section{COMPARATIVO ENTRE TECNOLOGIAS}
 
 Nesta seção apresentamos diferentes alternativas para compor a arquitetura do
