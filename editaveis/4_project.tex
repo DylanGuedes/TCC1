@@ -45,7 +45,7 @@ Dividimos a implementação da Arquitetura Kappa em três etapas:
 (2) ligações entre os diferentes serviços, tornando possível a publicação de
     mensagens no Kafka e sendo possível seu processamento no Spark; e
 (3) disponibilização de \textit{hooks} que possam ser estendidos futuramente,
-    possibilitando a criação de um \textit{pipeline de dados} customizável.
+    possibilitando a criação de um canal de dados customizável.
 
 Durante a implementação do novo serviço de processamento de dados para o
 InterSCity desenvolvemos o \textbf{Shock}, responsável por abstrair as
@@ -70,7 +70,7 @@ recurso no microsserviço Resource Catalog (3) e informa o UUID que deve ser
 utilizado pelo recurso. O recurso passa a enviar dados ao Resource Adaptor, que
 (4) publica a chegada dos novos dados no Shock através do Kafka, promovendo
 extensão ao InterSCity.  Aplicações (5) interagem com o Shock via Kafka,
-construindo o \textit{pipeline} de um \textit{stream}, definindo as operações a
+construindo o canal de um \textit{stream}, definindo as operações a
 serem executadas.  Por fim, os resultados do Shock e do Data Collector (6)
 serão disponibilizados, podendo ser consumidos por aplicações como o
 microsserviço Resource Viewer, que (7) apresenta dados ao usuário final.
@@ -129,7 +129,7 @@ chegada de novos dados de ônibus, para que esses dados sejam (4) publicados em
 um tópico específico do Kafka pelo Resource Adaptor. Após serem disponibilizados
 no Kafka, os dados ficam disponíveis para serem utilizados pelo Shock, que os (5)
 recebe nos \textit{streams} configurados para ingerir dados, e os processa
-através do \textit{pipeline} construído no passo 2. Por fim, após o
+através do canal construído no passo 2. Por fim, após o
 processamento dos dados, o Shock pode (6) disponibilizar os resultados do
 processamento, que pode ser reaproveitado por aplicações terceiras.
 
