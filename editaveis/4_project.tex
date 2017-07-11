@@ -164,6 +164,24 @@ da ação desejada, e o segundo, ``arg2'', os argumentos da ação. Um
 deve ser enviada caso queira-se o registro de um estágio de ingestão no
 \textit{stream} \textit{mystream} utilizando a estratégia \textit{socketIngestion}.
 
+\begin{figure}[hbt]
+  \centering
+    \includegraphics[scale=0.5]{figuras/ShockUML.png}
+  \caption{Diagrama de classes do Shock.}
+  \label{fig:uml}
+\end{figure}
+
+A Figura \ref{fig:uml} apresenta o diagrama das principais classes do Shock. O
+núcleo do Shock é representado pela classe Shock, que sustenta-se no uso de um
+\textit{handler} que implemente o método \textit{handle}. Atualmente, um
+\textit{handler} para o InterSCity encontra-se implementado, contudo, caso
+seja desejado o uso de um \textit{handler} que utilize a Arquitetura Lambda, por
+exemplo, basta a criação de uma nova classe que herde da classe
+\textit{Handler} e que implemente o método \textit{handle} para as diferentes
+ações requisitadas. Por fim, uma classe \textit{Stream} utiliza a arquitetura
+de camadas citada anteriormente, onde cabe ao \textit{handler} gerenciar e
+interagir com os diferentes \textit{streams} criados.
+
 \lstinputlisting[label={lst:ingestion},caption={
   Ingestão de dados no Shock via \textit{socket} e Kafka.
   }]{editaveis/arquivos/ingestion.py}
@@ -206,8 +224,6 @@ requisição no Kafka com o conteúdo \small{\textbf{processing;\{"stream": "mys
 'value' == 31"\}}}. Algumas possibilidades de estágios de análise
 estão contidos na Listagem \ref{lst:analyze}.
 
-\pagebreak
-
 \lstinputlisting[label={lst:publish},caption={
   Estratégias de publicação de resultados presentes no Shock.
 }]{editaveis/arquivos/sinks.py}
@@ -234,14 +250,13 @@ apresenta as estratégias de publicação em \textit{console}, Parquet e memóri
   \label{fig:ligacoes}
 \end{figure}
 
-Como alternativa às limitações de publicação dos dados, o Shock disponibiliza
-na API os \textit{flushes}, que atuam como \textit{jobs} adicionais que ingerem
-dados de alguma fonte (que não seja um \textit{stream}) e publicam em outra.
-Essa alternativa não precisaria existir caso
-a publicação via Kafka já estivesse disponível no Spark, mas enquanto o
-lançamento da versão 2.2 não ocorre, acaba sendo uma opção válida.
-Nesse sentido, uma aplicação cliente do InterSCity poderia usar o Shock para
-realizar processamento de seus dados seguindo o fluxo de interação da Figura
-\ref{fig:ligacoes}. Nessa interação, a aplicação faz definições no Shock via
-Kafka, e o Shock apresenta os resultados pelos estágios de publicação ou por
-WebSocket.
+Como alternativa às limitações de publicação dos dados, o Shock
+disponibiliza na API os \textit{flushes}, que atuam como \textit{jobs} adicionais
+que ingerem dados de alguma fonte (que não seja um \textit{stream}) e publicam
+em outra. Essa alternativa não precisaria existir caso a publicação via Kafka
+já estivesse disponível no Spark, mas enquanto o lançamento da versão 2.2 não
+ocorre, acaba sendo uma opção válida. Nesse sentido, uma aplicação cliente do
+InterSCity poderia usar o Shock para realizar processamento de seus dados
+seguindo o fluxo de interação da Figura \ref{fig:ligacoes}. Nessa interação, a
+aplicação faz definições no Shock via Kafka, e o Shock apresenta os resultados
+pelos estágios de publicação ou por WebSocket.
