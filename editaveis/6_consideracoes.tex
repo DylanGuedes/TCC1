@@ -7,8 +7,8 @@ para processamento de seus dados. Juntamente com o novo serviço, desenvolvemos
 o Shock, uma aplicação que abstrai e gerencia o uso de ferramentas de
 \textit{Big Data}, e o Forensic, que visa demonstrar a utilização do Shock.
 O Forensic é necessário pois sua interface aproxima os usuários finais, que
-passam a poder gerenciar \textit{streams} complexos sem conhecimento profundo
-das tecnologias.
+passam a poder gerenciar processamento de fluxos de dados complexos sem
+conhecimento profundo das tecnologias.
 Com a incorporação dos resultados que desenvolvemos, o InterSCity passa a poder
 atuar em operações com maior massa de dados e a fornecer processamento de dados
 para terceiros através da plataforma.
@@ -30,9 +30,9 @@ elas:
     \item \textbf{Utilização dos \textit{data frames}:} A utilização dos
         \textit{data frames} possibilitou o uso de síntaxe SQL, de menor
         complexidade que a manipulação de \textit{RDDs};
-    \item \textbf{Múltiplos \textit{streams}:} Mudamos a API de \textit{streams}
-        para que fosse feito o uso de \textit{streams} estruturados, que
-        possibilitam o uso de \textit{streams} múltiplos, adicionando ao
+    \item \textbf{Múltiplos fluxos de dados:} Mudamos a API de fluxos de dados
+        para que fosse feito o uso de fluxo estruturado, que
+        possibilitam o uso de fluxos múltiplos, adicionando ao
         InterSCity a possibilidade de, com apenas uma instância do ecossistema
         da plataforma, servir processamento de dados para vários usuários.
 \end{itemize}
@@ -42,13 +42,13 @@ feitas outras contribuições, como (i) a criação de um novo \textit{script} d
 coleta de dados, que consome a API de estações de bicicleta; e (ii) melhoria 
 de um \textit{script} que ingere dados sobre a qualidade do ar.
 
-As limitações das aplicações desenvolvidas se devem principalmente aos fluxos
-alternativos, como edição e visualização de \textit{log} dos \textit{streams},
+As limitações das aplicações desenvolvidas se devem principalmente aos cenários
+alternativos, como edição e visualização de \textit{log} dos fluxos,
 que não foram desenvolvidos. Atualmente não é possível, por exemplo, a edição de
-um \textit{stream} que já está em estado de processamento, a abortagem do
-processamento de um \textit{stream} ou a visualização do \textit{log} do
-\textit{status} de um \textit{stream} pelo Forensic. Com base nessas limitações,
-definimos como os próximos passos para o Shock e Forensic a adição de fluxos
-alternativos para os \textit{streams}, um teste em cenário real de cidades
+um fluxo que já está em estado de processamento, a abortagem do
+processamento de um fluxo ou a visualização do \textit{log} do
+\textit{status} de um fluxo pelo Forensic. Com base nessas limitações,
+definimos como os próximos passos para o Shock e Forensic a adição de cenários
+alternativos para os fluxos de processamento, um teste em cenário real de cidades
 inteligentes e a incorporação do serviço de processamento ao núcleo do
 InterSCity.

@@ -14,11 +14,11 @@ decisões a respeito do novo serviço.
 Levantamos duas arquiteturas: a Lambda, que é mais difundida, e a Kappa,
 que escolhemos para utilização no novo serviço de processamento, e que é
 uma resposta a arquitetura Lambda. Definimos também tecnologias que abranjam duas
-formas de processamento: \textit{batch} e
-\textit{streaming}. No processamento \textit{batch} os dados são utilizados
+formas de processamento: processamento em lote e processamento de fluxos.
+No processamento em lote os dados são utilizados
 em conjunto e armazenados de uma forma específica antes de serem escalonados
 para o processamento \cite{zheng2015real}. No processamento
-\textit{streaming}, por outro lado, os dados são processados conforme estão
+de fluxos, por outro lado, os dados são processados conforme estão
 disponíveis \cite{zheng2015real}, permitindo consulta às informações com menor
 latência. Descrevemos adaptações nas arquiteturas em relação ao apresentado
 na literatura, com o propósito de maior adequação ao contexto de cidades
@@ -42,7 +42,7 @@ massa de dados, e tem como ponto fraco a alta latência. Em sua execução, ela
 cria e gerencia um \textit{master dataset}\footnote{O \textit{master dataset} é um lote
 histórico de informação, que, por ser imutável, só possibilita \textbf{anexação}
 de informações.}, que após processado, tem seu resultado condensado em
-\textit{batch views}, utilizados pela \textbf{camada \textit{serving}}.
+visão de lotes, utilizados pela \textbf{camada \textit{serving}}.
 A camada \textit{batch} é então, em sua essência, imutável, de modo que caso
 uma mudança seja necessária, uma abordagem diferente deve ser seguida: o dado
 que carece alteração não sofre transformações, permanecendo inalterado, mas um
@@ -52,7 +52,7 @@ A \textbf{camada \textit{speed}} tem como diferencial o processamento com baixa
 latência, que é obtido pelo uso de uma parcela menor da massa de dados\footnote{
 A camada \textit{speed} só leva em conta dados que surgiram após a camada
 \textit{batch} ter começado seu processamento.}. Outra característica importante
-é que essa camada faz uso do processamento \textit{streaming}, estratégia que
+é que essa camada faz uso do processamento de fluxo de dados, estratégia que
 processa os dados conforme ficam disponíveis. Esse tipo de
 processamento funciona bem com mecanismos de passagem de mensagem
 \cite{marz2015}, e permite que as consultas feitas levem em conta dados
@@ -62,9 +62,9 @@ motivos, a camada \textit{speed} também é conhecida como a camada que faz
 de dados, força o uso de um banco de dados que suporte escrita aleatória,
 aumentando substancialmente a complexidade da solução \cite{marz2015}. Por
 fim, a camada \textit{speed} condensa os resultados de seu processamento em
-\textit{real-time views}, que serão fundidos com os resultados das
-\textit{batch views} na apresentação do resultado final. Ao final os resultados
-da camada \textit{speed} são dispensados, após um \textit{batch} terminar seu
+visões de tempo-real, que serão fundidos com os resultados das
+visões de lote na apresentação do resultado final. Ao final, os resultados
+da camada \textit{speed} são dispensados após um lote terminar seu
 processamento \cite{marz2015}.
 
 \begin{figure}[hbt]
@@ -79,12 +79,12 @@ Um ciclo de vida típico da Arquitetura Lambda pode ser acompanhado na Figura
 de novos dados, que são (2) transmitidos tanto para a camada
 \textit{batch} quanto para a camada \textit{speed}. A camada \textit{batch}
 (3) anexa os novos dados e os processa, (4) gerando assim
-\textit{batch views} que são enviadas para a camada \textit{serving}. O mesmo
+visão de lotes que são enviadas para a camada \textit{serving}. O mesmo
 dado que foi enviado para a camada \textit{batch}, no passo (1), também foi
 enviado para a camada \textit{speed}, onde (5) será processado com menor latência,
-por só levar em conta dados recentes, gerando \textit{real-time views}. 
+por só levar em conta dados recentes, gerando visões de tempo-real. 
 Caso uma consulta seja feita ocorrerá uma (6) soma entre os resultados
-dos \textit{batch views} e \textit{real-time views}, representando o resultado
+dos visões de lote e visões de tempo-real, representando o resultado
 desejado para a consulta \cite{marz2015}.
 
 A Arquitetura Lambda garante sua resiliência através do \textit{isolamento de
@@ -94,7 +94,7 @@ resultados são processados na camada \textit{batch}, os resultados da camada
 \textit{speed} podem ser descartados. Essa técnica é essencial, já que o
 processamento em tempo-real pode criar inconsistências, por conta da baixa
 precisão que é ocasionada por usar somente dados recentes; contudo, essa
-inconsistência é corrigida no próximo \textit{batch} a ser processado,
+inconsistência é corrigida no próximo lote a ser processado,
 possibilitando que os resultados incoerentes da camada \textit{speed} sejam
 descartados \cite{marz2015}.
 
@@ -112,7 +112,7 @@ questionamentos\footnote{\url{https://www.oreilly.com/ideas/questioning-the-lamb
 quanto a complexidade da Arquitetura Lambda. Kappa é uma arquitetura recente (2014) e
 simples, e se baseia somente no uso da \textbf{camada \textit{speed}}
 \cite{seyvet2016}. É guiada por quatro princípios: (1) tudo é um
-\textit{stream}; (2) os dados devem ser imutáveis; (3) somente um
+fluxo de dados; (2) os dados devem ser imutáveis; (3) somente um
 \textit{framework} para processamento deve ser utilizado; (4) os dados devem
 armazenados, possibilitando a reprodução do estado \cite{seyvet2016}.
 
@@ -138,7 +138,7 @@ O funcionamento da Arquitetura Kappa está apresentado na Figura
 \ref{fig:kappa-lifecycle}, e começa com a chegada de novos dados,
 que são (1) publicados em tópicos do \textit{broker}. O \textit{broker} (2) anexa
 os novos dados em um \textit{log} distribuído e (3) os transfere para
-ferramentas de processamento \textit{streaming} que estejam inscritas no tópico
+ferramentas de processamento em lote que estejam inscritas no tópico
 relacionado. Por fim, (4) os resultados do processamento são disponibilizados
 para serem consumidos.
 
@@ -211,7 +211,7 @@ flexibilidade fica disponível, o que pode ser importante para certos contextos.
 
 Nesta seção apresentamos diferentes alternativas para compor a arquitetura do
 novo serviço de processamentos do InterSCity. Separamos as ferramentas
-nas categorias \textit{processamento batch}, \textit{processamento streaming}
+nas categorias processamento em lote, processamento de fluxos
 e \textit{broker}. Não analisamos ferramentas de banco de dados pois
 uma troca seria prejudicial e não interessante para a equipe do InterSCity.
 Analisamos um \textit{broker} diferente do utilizado pelo InterSCity,
@@ -220,7 +220,7 @@ os microsserviços existentes da plataforma.
 
 \subsection{Ferramentas de Processamento Batch}
 
-Analisamos duas ferramentas de processamento \textit{batch}: o \textbf{Apache
+Analisamos duas ferramentas de processamento em lote: o \textbf{Apache
 Hadoop MapReduce}, precursor no ecossistema \textit{Big Data}, e o
 \textbf{Apache Spark}, que optamos para compor o novo serviço de processamento.
 O Hadoop MapReduce é uma das ferramentas que compõe o ecossistema do Hadoop, e
@@ -237,9 +237,9 @@ uso do disco, que deve ser feito sempre que um \textit{job} é finalizado. Por
 conta dessa característica, seu uso não é facilmente justificável em cenários em
 que a massa de dados não é grande o suficiente, e uma opção válida acaba sendo
 o Apache Spark, que troca o uso do disco pelo uso da memória, através da estratégia
-de \textit{micro-batches} \cite{arsalan2014}. Os \textit{micro-batches} têm tempo de processamento
+de micro-lotes \cite{arsalan2014}. Os micro-lotes têm tempo de processamento
 definidos em código, de modo que seja possível definir tempos de
-\textit{micro-batches} pequenos o suficiente para que seja considerado
+micro-lotes pequenos o suficiente para que seja considerado
 tempo-real\footnote{O tempo-real mencionado é sempre o \textit{soft real-time}.}.
 
 \begin{table}[!htbp]
@@ -265,7 +265,7 @@ tempo-real\footnote{O tempo-real mencionado é sempre o \textit{soft real-time}.
 
 Outras características importantes do Spark para o contexto do
 InterSCity são: API nativa em Python, Scala, Java e R; biblioteca de
-\textit{streaming}, permitindo que o Spark seja utilizado também na camada
+processamento de fluxos, permitindo que o Spark seja utilizado também na camada
 \textit{speed} da Arquitetura Lambda; e biblioteca de clusterização e
 aprendizagem de máquina, que pode ser útil para compor o futuro canal de
 processamento de dados do InterSCity. A Tabela \ref{tab:graysort2014results}
@@ -276,23 +276,23 @@ MapReduce, utilizando dez vezes menos recursos.
 
 \footnotetext{\url{https://databricks.com/blog/2014/11/05/spark-officially-sets-a-new-record-in-large-scale-sorting.html}}
 
-\subsection{Ferramentas de Processamento Streaming}
+\subsection{Ferramentas de Processamento de Fluxos}
 
-Analisamos duas ferramentas de processamento \textit{streaming}: O
+Analisamos duas ferramentas de processamento de fluxos: O
 \textbf{Apache Storm}, escrito por Nathan Marz, criador da Arquitetura
 Lambda, e o \textbf{Apache Spark}, analisado anteriormente como ferramenta de
-processamento \textit{batch}, e que escolhemos para uso no novo serviço de
+processamento em lote, e que escolhemos para uso no novo serviço de
 processamento. O Apache Storm permite o uso de qualquer
 linguagem de programação que interaja com a saída e entrada padrão do Sistema
 Operacional, e sendo sugerido por Nathan Marz em seu livro sobre a Arquitetura
 Lambda \cite{marz2015}, se faz uma opção segura para compor a camada
 \textit{speed}.
 
-O Spark é utilizado como ferramenta de \textit{streaming} graças ao seu módulo
+O Spark é utilizado como ferramenta de processamento de fluxos graças ao seu módulo
 Spark Streaming, que tem nativamente integração com outras ferramentas que
 podem servir de produtores, como o Kinesis, Kafka, HDFS, dentre outras. O
 grande diferencial entre o Spark e o Storm é que o Spark faz processamento
-\textit{streaming} via \textit{micro-batches}, ou seja, processa em intervalo
+de fluxos via micro-lotes, ou seja, processa em intervalo
 de tempos pré-definidos, enquanto o Storm processa em tempo-real, conforme
 chegam novos dados. Essa diferença resulta em um tempo de latência notável
 entre os dois, onde o Spark apresenta tempo de latência com pouca variância
@@ -306,7 +306,7 @@ Storm.
 O Storm apresenta como vantagem em relação ao Spark o desempenho
 superior e a flexibilidade de uso da linguagem Ruby, já utilizada pelo time
 do InterSCity, porém o Spark conta com a possibilidade de processamento
-\textit{batch}, integração nativa com ferramentas produtoras e o acesso a
+em lote, integração nativa com ferramentas produtoras e o acesso a
 ferramentas de clusterização e aprendizagem de máquina, que por serem
 interessantes para o InterSCity, equilibram o \textit{trade-off} entre as
 duas ferramentas.
@@ -329,7 +329,7 @@ federação\footnote{\url{https://www.rabbitmq.com/federation.html}}.
 
 O Apache Kafka, que foi a ferramenta que decidimos para compor o novo serviço,
 é uma ferramenta mais nova\footnote{O RabbitMQ teve
-sua primeira \textit{release} em 2007, e o Apache Kafka em 2011.}, e também é
+sua primeira versão estável em 2007, e o Apache Kafka em 2011.}, e também é
 utilizado em produção por diversas
 empresas\footnote{\url{https://cwiki.apache.org/confluence/display/KAFKA/Powered+By}}.
 Tendo como principais diferenciais o desempenho e a escalabilidade,

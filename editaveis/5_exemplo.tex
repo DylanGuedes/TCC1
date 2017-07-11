@@ -12,7 +12,7 @@ de aplicações Web.
 \begin{figure}[hbt]
   \centering
   \includegraphics[width=\textwidth]{figuras/pipeline.png}
-    \caption{Página de configuração de um \textit{stream}. Os parâmetros
+    \caption{Página de configuração de um fluxo. Os parâmetros
 obrigatórios (\textit{topic e brokers}) foram configurados.}
   \label{fig:forensicparams}
 \end{figure}
@@ -27,16 +27,16 @@ obrigatórios (\textit{topic e brokers}) foram configurados.}
 O Forensic tem como principais objetivos abstrair o Shock do usuário final,
 e consequentemente, as ferramentas de \textit{Big Data} (como o Spark), ao passo em que
 fornece um conjunto de funcionalidades que permitem ao usuário final configurar
-a atuação dos \textit{streams}, semelhante a outros serviços existentes,
+a atuação dos fluxos, semelhante a outros serviços existentes,
 como o Amazon AWS\footnote{\url{https://aws.amazon.com/kinesis/analytics/}}.
 Um usuário que deseje interagir com o Shock e o InterSCity deve
-(1) configurar um \textit{stream} novo com os
-parâmetros desejados; (2) criar esse \textit{stream} no Shock; (3) injetar
-esse \textit{stream} no Shock; (4) e iniciar o processamento do
-\textit{stream}. O Forensic abstrai esses 4 passos, facilitando o uso
+(1) configurar um fluxo novo com os
+parâmetros desejados; (2) criar esse fluxo no Shock; (3) injetar
+esse fluxo no Shock; (4) e iniciar o processamento de fluxos.
+O Forensic abstrai esses 4 passos, facilitando o uso
 das ferramentas e da plataforma, aproximando usuários finais que não tenham
 grande conhecimento do código-fonte do Shock. A Figura \ref{fig:forensicparams}
-apresenta a página de visualização e edição de um \textit{stream}, e a Figura
+apresenta a página de visualização e edição de um fluxo, e a Figura
 \ref{fig:reports} a página de visualização de resultados processados. Os
 resultados de cada dado são mostrados separadamente, onde o título representa
 a capacidade do recurso, e o texto centralizado o valor da respectiva capacidade.
@@ -59,13 +59,13 @@ A solução desse caso de uso pode ser divida em três etapas:
 \begin{enumerate}
     \item Coletar os dados;
     \item Publicar os dados no InterSCity;
-    \item Configurar um \textit{stream} que filtre os dados, removendo
+    \item Configurar um fluxo que filtre os dados, removendo
         da lista os dados com boa qualidade do ar (pois queremos as regiões
         com qualidade insatisfatória).
 \end{enumerate}
 
 O primeiro passo, de coleta dos dados, pode ser resolvido via \textit{crawler},
-para extrair e normalizar os dados do \textit{site}. Um \textit{script} que
+para extrair e normalizar os dados coletados. Um \textit{script} que
 utiliza o Mechanize já havia sido desenvolvido por contribuidores do
 InterSCity\footnote{\url{https://github.com/lucaskanashiro/collect_sp_data/blob/master/air_quality.rb}},
 e pôde ser reaproveitado.
@@ -79,8 +79,8 @@ possibilitando o registro de recursos e o envio dos dados.
 \lstinputlisting[label={lst:flush1},language=elixir,caption={Consumo dos dados via \textit{websocket}
 caso o evento seja \textit{new\_report}.}]{editaveis/arquivos/channel.ex}
 
-O terceiro passo, de configuração do \textit{stream}, é feito através do Forensic.
-Um \textit{stream} deve ser criado na interface, e configurado para uso dos
+O terceiro passo, de configuração do fluxo, é feito através do Forensic.
+Um fluxo deve ser criado na interface, e configurado para uso dos
 estágios \textit{Kafka Ingestion}, \textit{Kafka Cast} e \textit{Filter}.
 O estágio de publicação é mais flexível, e qualquer
 estratégia disponível no Forensic serve para esse caso de uso. O Forensic
@@ -99,7 +99,7 @@ via \textit{websocket}.
 
 \begin{table}[hbt]
     \centering
-    \caption{Parâmetros do \textit{stream} utilizado no primeiro caso de uso.}
+    \caption{Parâmetros do fluxo utilizado no primeiro caso de uso.}
     \label{tab:case1}
     \begin{tabular}{|c|c|c|}
         \hline
@@ -112,9 +112,9 @@ via \textit{websocket}.
     \end{tabular}
 \end{table}
 
-Após o \textit{stream} ser criado e os estágios selecionados, basta
+Após o fluxo ser criado e os estágios selecionados, basta
 configurar os parâmetros e transferir as definições para o Shock. A Figura
-\ref{fig:case1} apresenta uma tela do Forensic com o \textit{stream} já
+\ref{fig:case1} apresenta uma tela do Forensic com o fluxo já
 configurado, utilizando os valores presentes na Tabela \ref{tab:case1}.
 
 Por fim, basta seguir os passos de transferência que o Forensic sugere (\textit{Create
@@ -124,7 +124,8 @@ dados, e a próxima vez que o usuário visitar a página de alertas e requisitar
 atualização, aparecerão os dados insatisfatórios da qualidade do ar da cidade
 de São Paulo.
 
-\section{CASO DE USO 2 - MÉDIA DE BICICLETAS LIVRES NA REGIÃO COM COMBINAÇÃO DE STREAMS}
+\section{CASO DE USO 2 - MÉDIA DE BICICLETAS LIVRES NA REGIÃO COM COMBINAÇÃO DE
+FLUXOS}
 
 O segundo caso que separamos visa calcular a média de bicicletas livres em estações
 de bicicletas de São Paulo, utilizando como base os dados do
@@ -132,8 +133,8 @@ CityBik\footnote{\url{https://citybik.es/}}. Esse caso pode ser visto como uma
 versão mais complexa do caso anterior, pois deve ser feito o filtro de
 capacidades de bicicletas e o cálculo da média dos valores. Ainda,
 como mencionado, o Shock só disponibiliza 4 estágios por
-\textit{stream}, e como esses requisitos carecem ao menos 5, devem ser criados
-dois \textit{streams}, onde o primeiro deve ingerir dados do InterSCity, e o
+fluxos, e como esses requisitos carecem ao menos 5, devem ser criados
+dois fluxos, onde o primeiro deve ingerir dados do InterSCity, e o
 segundo deve ingerir os resultados do primeiro.
 
 Utilizando os mesmos passos definidos no caso de uso anterior, para o Passo 1
@@ -145,7 +146,7 @@ publicando os dados no InterSCity.
 
 \begin{table}[hbt]
     \centering
-    \caption{Parâmetros do primeiro \textit{stream}.}
+    \caption{Parâmetros do primeiro fluxo.}
     \label{tab:case2-1}
     \begin{tabular}{|c|c|c|}
         \hline
@@ -160,7 +161,7 @@ publicando os dados no InterSCity.
 
 \begin{table}[hbt]
 \centering
-    \caption{Parâmetros do segundo \textit{stream}.}
+    \caption{Parâmetros do segundo fluxo.}
 \label{tab:case2-2}
 \begin{tabular}{|c|c|c|}
 \hline
@@ -171,18 +172,18 @@ publicando os dados no InterSCity.
 \end{tabular}
 \end{table}
 
-Para o Passo 3, devem ser configurados dois \textit{streams}. O primeiro deve
+Para o Passo 3, devem ser configurados dois fluxos. O primeiro deve
 conter os estágios \textit{Kafka Ingestion}, \textit{Kafka Cast},
 \textit{Filter} e \textit{Parquet Publishing}, de modo a ingerir novos dados
 do InterSCity, filtrar dados não desejados e disponibilizar os dados em formato
-Parquet. O segundo \textit{stream} deve conter os estágios
+Parquet. O segundo fluxo deve conter os estágios
 \textit{InterSCity Parquet Ingestion}, \textit{Mean} e alguma forma de
-publicação. A ligação entre os dois \textit{streams} ocorre quando o primeiro
-\textit{stream} publica resultados em um arquivo Parquet, e o segundo
-\textit{stream} ingere esses resultados como entrada. O valor dos parâmetros
-utilizados no primeiro \textit{stream} estão apresentados na Tabela
-\ref{tab:case2-1}, e os parâmetros do segundo \textit{stream} na Tabela
+publicação. A ligação entre os dois fluxos ocorre quando o primeiro
+publica resultados em um arquivo Parquet, e o segundo
+ingere esses resultados como entrada. O valor dos parâmetros
+utilizados no primeiro fluxo estão apresentados na Tabela
+\ref{tab:case2-1}, e os parâmetros do segundo fluxo na Tabela
 \ref{tab:case2-2}. Após a configuração dos parâmetros e transferência das
 configurações para o Shock, semelhante ao ocorrido no caso de uso anterior,
-os dois \textit{streams} começam o processamento dos dados, retornando para o
+os dois fluxos começam o processamento dos dados, retornando para o
 Forensic a média de bicicletas disponíveis na região.
