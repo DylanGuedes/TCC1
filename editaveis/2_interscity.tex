@@ -7,8 +7,8 @@ no desenvolvimento de infraestruturas de cidades inteligentes \cite{nof2016}.
 Está licenciado sob
 MPLv2\footnote{\url{www.mozilla.org/en-US/MPL/2.0/}} (\textit{Mozilla Public License
 Version 2.0}), foi construído com a
-utilização da arquitetura MSA (\textit{Microservices Architecture}) e tem como principal
-objetivo prover os serviços e integrações necessárias para a construção de
+utilização da arquitetura MSA (\textit{Microservices Architecture}) e tem como
+principal objetivo prover os serviços e integrações necessárias para a construção de
 aplicações de cidades inteligentes complexas \cite{delesposte2017}. Baseando-se
 no desenvolvimento colaborativo e na utilização de tecnologias software livre,
 o projeto é desenvolvido com a ajuda de diversos colaboradores que, utilizando
@@ -76,12 +76,12 @@ dispositivos na plataforma \cite{delesposte2017}.
   \label{fig:interscity-architecture}
 \end{figure}
 
-
 O \textbf{Resource Viewer} e o \textbf{Resource Discovery}, por outro lado,
 são similares por manipularem e utilizarem o Data Collector e o Resource
 Catalog em sua execução. O Resource Viewer tem como objetivo apresentar ao
 usuário final os dados dos recursos, enquanto o Resource Discovery provê uma API
- de busca por dispositivos disponíveis, possibilitando o uso de filtros
+(\textit{Application Programming Interface}) de busca por dispositivos
+disponíveis, possibilitando o uso de filtros
 \cite{delesposte2017}. Por fim, o \textbf{Actuator Controller} provê serviços
 para requisições nos recursos IoT atuadores registrados na plataforma,
 armazenando os dados e possibilitando auditoria \cite{delesposte2017}. A Figura
@@ -115,7 +115,8 @@ microsserviços da plataforma submódulos.
 Atualmente a plataforma está em desenvolvimento, e embora não conte
 com uma camada de processamento de dados ideal, certo esforço pela equipe do
 InterSCity culminou em um serviço de processamento provisório, que pôde servir
-de base para o desenvolvimento da proposta do novo serviço de processamento. Houve ainda a
+de base para o desenvolvimento da proposta do novo serviço de processamento.
+Houve ainda a
 troca de tecnologia de banco de dados no microsserviço Data Collector, que
 passou do Postgres (tecnologia SQL) para o MongoDB (tecnologia NoSQL), troca
 importante na busca por uma maior elasticidade no volume de dados. A equipe
@@ -125,9 +126,9 @@ conta com uma configuração pronta para uso do Apache Spark e
 Processor, contudo, apresenta uma solução bem específica, não podendo ser
 reaproveitado por outras aplicações.
 
-Nesse contexto, neste trabalho, desenvolvemos um novo serviço de processamento de dados que
-permite que aplicações de cidades inteligentes utilizem o InterSCity no processamento e
-análise de seus dados. Através do novo serviço,
+Nesse contexto, neste trabalho, desenvolvemos um novo serviço de processamento de
+dados que permite que aplicações de cidades inteligentes utilizem o InterSCity no
+processamento e análise de seus dados. Através do novo serviço,
 um maior volume de dados poderá ser processado pela plataforma, possibilitando
 também o uso de algoritmos e operações complexas. O novo serviço
 faz uso de um padrão de projeto de \textit{Big Data} adequado para o contexto

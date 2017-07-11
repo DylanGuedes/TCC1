@@ -24,7 +24,7 @@ processamento de fluxos e de um \textit{broker} adequado.
 Escolhemos o \textbf{Apache Spark} como tecnologia de processamento de fluxos
 a ser usada, por dispor nativamente de biblioteca de clusterização
 e aprendizagem de máquina. O Spark ainda facilita, caso necessário, a
-troca para a Arquitetura Lambda, por dispor de processamento \textit{batch}.
+troca para a Arquitetura Lambda, por dispor de processamento em lote.
 Escolhemos o \textbf{Apache Kafka} como o \textit{broker} do novo serviço de
 processamento, sendo essa uma escolha menos óbvia que a anterior. Embora o
 RabbitMQ já seja utilizado pelo InterSCity e tenha vantagens em certos aspectos
@@ -135,7 +135,7 @@ processamento, que pode ser reaproveitado por aplicações terceiras.
 \begin{figure}[hbt]
   \centering
   \includegraphics[scale=0.35]{figuras/arquiteturaforensic.png}
-  \caption{Padrão \textit{ingest, setup, analyze e publish.}}
+  \caption{Padrão \textit{ingestão, preparo, análise e publicação.}}
   \label{fig:ingeststore}
 \end{figure}
 

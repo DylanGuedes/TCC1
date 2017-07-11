@@ -31,41 +31,42 @@ A Arquitetura Lambda é um padrão de projeto para plataformas de processamento
 de dados que utilizam tecnologias de \textit{Big Data} \cite{kiran2015}, e
 surge como um caminho alternativo a outras arquiteturas mais antigas, como a
 incremental com \textit{sharding} \cite{marz2015}. É composta de três camadas:
-a camada \textit{batch}\footnote{No decorrer do texto, as camadas da
-Arquitetura Lambda e outros termos associados não serão traduzidos.}, a camada
-\textit{serving} e a camada \textit{speed} \cite{kiran2015}. Cada uma dessas
+a camada de processamento em lotes (\textit{batch layer}), a camada de processamento de
+fluxo de dados (\textit{speed layer}) e a camada de serviço (\textit{serving
+layer}) \cite{kiran2015}. Cada uma dessas
 camadas é implementada utilizando algoritmos e ferramentas específicas, de modo
 que certas ferramentas são mais apropriadas em certos contextos.
 
-A \textbf{camada \textit{batch}} é responsável pelo processamento de uma grande
+A \textbf{camada de processamento em lotes} é responsável pelo processamento de uma grande
 massa de dados, e tem como ponto fraco a alta latência. Em sua execução, ela
-cria e gerencia um \textit{master dataset}\footnote{O \textit{master dataset} é um lote
-histórico de informação, que, por ser imutável, só possibilita \textbf{anexação}
-de informações.}, que após processado, tem seu resultado condensado em
-visão de lotes, utilizados pela \textbf{camada \textit{serving}}.
-A camada \textit{batch} é então, em sua essência, imutável, de modo que caso
-uma mudança seja necessária, uma abordagem diferente deve ser seguida: o dado
-que carece alteração não sofre transformações, permanecendo inalterado, mas um
-novo dado com as alterações é inserido no lote \cite{marz2015}.
+cria e gerencia um conjunto de dados mestre\footnote{O conjunto de dados mestre
+é um lote histórico de informação que, por ser imutável, só possibilita
+\textbf{anexação} de informações.} (\textit{master dataset}), que após processado,
+tem seu resultado condensado em visões de lotes (\textit{batch views}),
+utilizados pela \textbf{camada de serviço}.  A camada de processamento em lotes
+é então, em sua essência, imutável, de modo que caso uma mudança seja necessária,
+uma abordagem diferente deve ser seguida: o dado que carece alteração não sofre
+transformações, permanecendo inalterado, mas um novo dado com as alterações é
+inserido no lote \cite{marz2015}.
 
-A \textbf{camada \textit{speed}} tem como diferencial o processamento com baixa
-latência, que é obtido pelo uso de uma parcela menor da massa de dados\footnote{
-A camada \textit{speed} só leva em conta dados que surgiram após a camada
-\textit{batch} ter começado seu processamento.}. Outra característica importante
+A \textbf{camada de processamento de fluxo de dados} tem como diferencial o
+processamento com baixa latência, que é obtido pelo uso de uma parcela menor da
+massa de dados\footnote{A camada de processamento de fluxo de dados só leva em
+conta dados que surgiram após a camada de processamento em lote ter começado seu
+processamento.}. Outra característica importante
 é que essa camada faz uso do processamento de fluxo de dados, estratégia que
 processa os dados conforme ficam disponíveis. Esse tipo de
 processamento funciona bem com mecanismos de passagem de mensagem
 \cite{marz2015}, e permite que as consultas feitas levem em conta dados
-recentes, ignorados temporariamente pela camada \textit{batch}. Por esses
-motivos, a camada \textit{speed} também é conhecida como a camada que faz
-\textit{processamento incremental} \cite{marz2015}, e que por aceitar a mutação
+recentes, ignorados temporariamente pela camada de processamento em lote. Por esses
+motivos, a camada de processamento de fluxo de dados também é conhecida como a
+camada que faz \textit{processamento incremental} \cite{marz2015}, e que por aceitar a mutação
 de dados, força o uso de um banco de dados que suporte escrita aleatória,
 aumentando substancialmente a complexidade da solução \cite{marz2015}. Por
-fim, a camada \textit{speed} condensa os resultados de seu processamento em
-visões de tempo-real, que serão fundidos com os resultados das
-visões de lote na apresentação do resultado final. Ao final, os resultados
-da camada \textit{speed} são dispensados após um lote terminar seu
-processamento \cite{marz2015}.
+fim, ela também é a camada que condensa os resultados de seu processamento em
+visões de tempo-real (\textit{real-time views}), que serão fundidos com os resultados das
+visões de lote na apresentação do resultado. Ao final, os resultados
+da camada são dispensados após um lote terminar seu processamento \cite{marz2015}.
 
 \begin{figure}[hbt]
   \centering
@@ -77,41 +78,40 @@ processamento \cite{marz2015}.
 Um ciclo de vida típico da Arquitetura Lambda pode ser acompanhado na Figura
 \ref{fig:lambda-lifecycle}, e tem seu início com a (1) chegada
 de novos dados, que são (2) transmitidos tanto para a camada
-\textit{batch} quanto para a camada \textit{speed}. A camada \textit{batch}
-(3) anexa os novos dados e os processa, (4) gerando assim
-visão de lotes que são enviadas para a camada \textit{serving}. O mesmo
-dado que foi enviado para a camada \textit{batch}, no passo (1), também foi
-enviado para a camada \textit{speed}, onde (5) será processado com menor latência,
+de processamento em lote quanto para a camada de processamento de fluxo de dados.
+A camada de processamento em lote (3) anexa os novos dados e os processa, (4) gerando assim
+visões de lotes que são enviadas para a camada de serviço. O mesmo
+dado que foi enviado para a camada de processamento em lote, no passo (1), também foi
+enviado para a camada de processamento de fluxo, onde (5) será processado com menor latência,
 por só levar em conta dados recentes, gerando visões de tempo-real. 
 Caso uma consulta seja feita ocorrerá uma (6) soma entre os resultados
 dos visões de lote e visões de tempo-real, representando o resultado
 desejado para a consulta \cite{marz2015}.
 
 A Arquitetura Lambda garante sua resiliência através do \textit{isolamento de
-complexidade}, que é obtido graças a separação entre camadas \textit{batch}
-e \textit{speed} \cite{marz2015}. A resiliência é obtida pois, uma vez que os
-resultados são processados na camada \textit{batch}, os resultados da camada
-\textit{speed} podem ser descartados. Essa técnica é essencial, já que o
+complexidade}, que é obtido graças a separação entre camadas de processamento em
+lote e de fluxo de dados \cite{marz2015}. A resiliência é obtida pois, uma vez que os
+resultados são processados na camada de processamento em lote, os resultados da camada
+de processamento de fluxo podem ser descartados. Essa técnica é essencial, já que o
 processamento em tempo-real pode criar inconsistências, por conta da baixa
 precisão que é ocasionada por usar somente dados recentes; contudo, essa
 inconsistência é corrigida no próximo lote a ser processado,
-possibilitando que os resultados incoerentes da camada \textit{speed} sejam
-descartados \cite{marz2015}.
+possibilitando que os resultados incoerentes da camada de processamento de fluxo
+sejam descartados \cite{marz2015}.
 
 Do ponto de vista da implementação no InterSCity, a Arquitetura Lambda pode
-precisar de adaptações. Na literatura, a camada \textit{serving} é a responsável pela
-junção entre o resultado do processamento feito pelas camadas \textit{speed} e
-\textit{batch}, e a separação entre as camadas \textit{batch} e \textit{serving}
-é bem definida \cite{marz2015}, contudo, isso depende das ferramentas
-definidas para uso. 
+precisar de adaptações. Na literatura, a camada de serviço é a
+responsável pela junção de resultados das duas camadas que processam dados,
+sendo a separação entre as camadas bem definida \cite{marz2015}, contudo, isso
+depende das ferramentas definidas para uso. 
 
 \section{ARQUITETURA KAPPA}
 
 A Arquitetura Kappa é um padrão de projeto de \textit{software}, e surgiu após
 questionamentos\footnote{\url{https://www.oreilly.com/ideas/questioning-the-lambda-architecture}}
 quanto a complexidade da Arquitetura Lambda. Kappa é uma arquitetura recente (2014) e
-simples, e se baseia somente no uso da \textbf{camada \textit{speed}}
-\cite{seyvet2016}. É guiada por quatro princípios: (1) tudo é um
+simples, e se baseia somente no uso da \textbf{camada de processamento de fluxo
+de dados} \cite{seyvet2016}. É guiada por quatro princípios: (1) tudo é um
 fluxo de dados; (2) os dados devem ser imutáveis; (3) somente um
 \textit{framework} para processamento deve ser utilizado; (4) os dados devem
 armazenados, possibilitando a reprodução do estado \cite{seyvet2016}.
@@ -204,8 +204,9 @@ dos dados resolveria bem. Contudo, caso seja desejado uma operação em toda
 a massa de dados, como uma consulta em busca de um dado termo, a Kappa
 não funciona, enquanto a Lambda pode escalonar um \textit{job} específico para essa
 tarefa sem maiores problemas. Dessa forma, pela Lambda suportar algoritmos e tarefas
-diferentes entre a camada \textit{batch} e a \textit{speed}, uma maior
-flexibilidade fica disponível, o que pode ser importante para certos contextos.
+diferentes entre a camada de processamento em lote e processamento de fluxo, uma
+maior flexibilidade fica disponível, o que pode ser importante para certos
+contextos.
 
 \section{COMPARATIVO ENTRE TECNOLOGIAS}
 
@@ -218,7 +219,7 @@ Analisamos um \textit{broker} diferente do utilizado pelo InterSCity,
 considerando sua atuação somente com o serviço de processamento, não alterando
 os microsserviços existentes da plataforma.
 
-\subsection{Ferramentas de Processamento Batch}
+\subsection{Ferramentas de Processamento em Lote}
 
 Analisamos duas ferramentas de processamento em lote: o \textbf{Apache
 Hadoop MapReduce}, precursor no ecossistema \textit{Big Data}, e o
@@ -240,7 +241,7 @@ o Apache Spark, que troca o uso do disco pelo uso da memória, através da estra
 de micro-lotes \cite{arsalan2014}. Os micro-lotes têm tempo de processamento
 definidos em código, de modo que seja possível definir tempos de
 micro-lotes pequenos o suficiente para que seja considerado
-tempo-real\footnote{O tempo-real mencionado é sempre o \textit{soft real-time}.}.
+tempo-real\footnote{O tempo-real mencionado é sempre o \textit{soft}.}.
 
 \begin{table}[!htbp]
     \centering
@@ -266,7 +267,7 @@ tempo-real\footnote{O tempo-real mencionado é sempre o \textit{soft real-time}.
 Outras características importantes do Spark para o contexto do
 InterSCity são: API nativa em Python, Scala, Java e R; biblioteca de
 processamento de fluxos, permitindo que o Spark seja utilizado também na camada
-\textit{speed} da Arquitetura Lambda; e biblioteca de clusterização e
+de processamento de fluxo da Arquitetura Lambda; e biblioteca de clusterização e
 aprendizagem de máquina, que pode ser útil para compor o futuro canal de
 processamento de dados do InterSCity. A Tabela \ref{tab:graysort2014results}
 apresenta um comparativo entre o desempenho do Hadoop MapReduce e do Spark, pela
@@ -276,9 +277,9 @@ MapReduce, utilizando dez vezes menos recursos.
 
 \footnotetext{\url{https://databricks.com/blog/2014/11/05/spark-officially-sets-a-new-record-in-large-scale-sorting.html}}
 
-\subsection{Ferramentas de Processamento de Fluxos}
+\subsection{Ferramentas de Processamento de Fluxo}
 
-Analisamos duas ferramentas de processamento de fluxos: O
+Analisamos duas ferramentas de processamento de fluxo: O
 \textbf{Apache Storm}, escrito por Nathan Marz, criador da Arquitetura
 Lambda, e o \textbf{Apache Spark}, analisado anteriormente como ferramenta de
 processamento em lote, e que escolhemos para uso no novo serviço de
@@ -286,7 +287,7 @@ processamento. O Apache Storm permite o uso de qualquer
 linguagem de programação que interaja com a saída e entrada padrão do Sistema
 Operacional, e sendo sugerido por Nathan Marz em seu livro sobre a Arquitetura
 Lambda \cite{marz2015}, se faz uma opção segura para compor a camada
-\textit{speed}.
+de processamento de fluxo de dados.
 
 O Spark é utilizado como ferramenta de processamento de fluxos graças ao seu módulo
 Spark Streaming, que tem nativamente integração com outras ferramentas que
