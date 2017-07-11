@@ -13,9 +13,9 @@ decisões a respeito do novo serviço.
 
 Levantamos duas arquiteturas: a Lambda, que é mais difundida, e a Kappa,
 que escolhemos para utilização no novo serviço de processamento, e que é
-uma resposta a arquitetura Lambda. Definimos também tecnologias que abranjam duas
+uma resposta a Arquitetura Lambda. Definimos também tecnologias que abranjam duas
 formas de processamento: processamento em lote e processamento de fluxos.
-No processamento em lote os dados são utilizados
+No processamento em lote, os dados são utilizados
 em conjunto e armazenados de uma forma específica antes de serem escalonados
 para o processamento \cite{zheng2015real}. No processamento
 de fluxos, por outro lado, os dados são processados conforme estão
@@ -42,7 +42,7 @@ massa de dados, e tem como ponto fraco a alta latência. Em sua execução, ela
 cria e gerencia um conjunto de dados mestre\footnote{O conjunto de dados mestre
 é um lote histórico de informação que, por ser imutável, só possibilita
 \textbf{anexação} de informações.} (\textit{master dataset}), que após processado,
-tem seu resultado condensado em visões de lotes (\textit{batch views}),
+apresenta seus resultados condensados em visões de lotes (\textit{batch views}),
 utilizados pela \textbf{camada de serviço}.  A camada de processamento em lotes
 é então, em sua essência, imutável, de modo que caso uma mudança seja necessária,
 uma abordagem diferente deve ser seguida: o dado que carece alteração não sofre
@@ -70,7 +70,7 @@ da camada são dispensados após um lote terminar seu processamento \cite{marz20
 
 \begin{figure}[hbt]
   \centering
-    \includegraphics[width=\textwidth]{figuras/lambda-lifecycle.png}
+    \includegraphics[width=\textwidth]{figuras/lambdaarchitecture.png}
     \caption{Ciclo de vida na Arquitetura Lambda. Baseado em: \citeonline{marz2015}.}
   \label{fig:lambda-lifecycle}
 \end{figure}
@@ -113,15 +113,15 @@ quanto a complexidade da Arquitetura Lambda. Kappa é uma arquitetura recente (2
 simples, e se baseia somente no uso da \textbf{camada de processamento de fluxo
 de dados} \cite{seyvet2016}. É guiada por quatro princípios: (1) tudo é um
 fluxo de dados; (2) os dados devem ser imutáveis; (3) somente um
-\textit{framework} para processamento deve ser utilizado; (4) os dados devem
+\textit{framework} para processamento deve ser utilizado; (4) os dados devem ser
 armazenados, possibilitando a reprodução do estado \cite{seyvet2016}.
 
-Fazendo uso da observação de que o \textit{log} é um conjunto de informações
+Fazendo uso da observação que o \textit{log} é um conjunto de informações
 imutáveis e com ordenação bem definida, a Arquitetura Kappa pode utilizá-lo
 para atingir os quatro princípios citados anteriormente \cite{kreps2014}. O
 \textit{log} é processado em tempo real, permitindo consultas em baixa
 latência, com a possibilidade de acesso de dados atuais e históricos
-\cite{forgeat2015}. Caso o processamento seja iniciado após o fluxo de dados já
+\cite{forgeat2015}. Caso o processamento seja iniciado após o fluxo de dados
 ter começado, duas opções são possíveis: processar o \textit{log} do início,
 tornando disponível os dados históricos; ou processar a partir do final,
 não tendo acesso aos dados históricos, mas tendo latência mínima
@@ -138,7 +138,7 @@ O funcionamento da Arquitetura Kappa está apresentado na Figura
 \ref{fig:kappa-lifecycle}, e começa com a chegada de novos dados,
 que são (1) publicados em tópicos do \textit{broker}. O \textit{broker} (2) anexa
 os novos dados em um \textit{log} distribuído e (3) os transfere para
-ferramentas de processamento em lote que estejam inscritas no tópico
+ferramentas de processamento que estejam inscritas no tópico
 relacionado. Por fim, (4) os resultados do processamento são disponibilizados
 para serem consumidos.
 
@@ -178,7 +178,7 @@ apresentado um cenário típico de atuação. No exemplo mostrado, a mensagem A
 é transmitida pelo Produtor1 no Tópico1, e a mensagem B é transmitida pelo
 Produtor2 no Tópico2. O Consumidor1 e o Consumidor2 recebem a mensagem A, por
 estarem inscritos no Tópico1, e os consumidores Consumidor2 e Consumidor3
-recebem a mensagem B, por estarem registrados no Tópico2. Esse funcionamento
+recebem a mensagem B, por estarem registrados no Tópico2. O funcionamento
 pode receber variações, a depender das tecnologias utilizadas, e é útil
 na implementação das arquiteturas Kappa e Lambda, sendo o
 \textit{broker} o responsável por recuperar novas informações e as
@@ -306,7 +306,7 @@ Storm.
 
 O Storm apresenta como vantagem em relação ao Spark o desempenho
 superior e a flexibilidade de uso da linguagem Ruby, já utilizada pelo time
-do InterSCity, porém o Spark conta com a possibilidade de processamento
+do InterSCity. Contudo, o Spark conta com a possibilidade de processamento
 em lote, integração nativa com ferramentas produtoras e o acesso a
 ferramentas de clusterização e aprendizagem de máquina, que por serem
 interessantes para o InterSCity, equilibram o \textit{trade-off} entre as
@@ -328,7 +328,7 @@ composições mais complexas e a possibilidade de uso de
 que suportam, por exemplo,
 federação\footnote{\url{https://www.rabbitmq.com/federation.html}}.
 
-O Apache Kafka, que foi a ferramenta que decidimos para compor o novo serviço,
+O Apache Kafka, ferramenta que decidimos para compor o novo serviço,
 é uma ferramenta mais nova\footnote{O RabbitMQ teve
 sua primeira versão estável em 2007, e o Apache Kafka em 2011.}, e também é
 utilizado em produção por diversas

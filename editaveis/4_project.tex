@@ -10,8 +10,12 @@ serviço pelo time atual do InterSCity. A Arquitetura Kappa permitirá a anális
 em tempo-real sem que ocorra perda de informações relevantes, o que é
 importante no contexto de cidades inteligentes, ao passo em que permite a
 análise de dados históricos, desde que tenha ocorrido o pré-processamento.
-Essa decisão resultou na necessidade de escolha de uma tecnologia de
-processamento de fluxos e de um \textit{broker} adequado.
+
+A decisão de uso da Arquitetura Kappa resulta na necessidade de escolha de uma
+tecnologia de processamento de fluxos e de um \textit{broker} adequado. Ao
+final, o novo serviço de processamento trata-se do conjunto de serviços
+definidos (\textit{broker} e ferramenta de processamento de fluxo) e aplicações
+desenvolvidas.
 
 \begin{figure}[hbt]
   \centering
@@ -69,7 +73,7 @@ recurso no microsserviço Resource Catalog (3) e informa o UUID que deve ser
 utilizado pelo recurso. O recurso passa a enviar dados ao Resource Adaptor, que
 (4) publica a chegada dos novos dados no Shock através do Kafka, promovendo
 extensão ao InterSCity.  Aplicações (5) interagem com o Shock via Kafka,
-construindo o canal de um fluxo de dados, definindo as operações a
+construindo o canal de fluxo de dados, definindo as operações a
 serem executadas.  Por fim, os resultados do Shock e do Data Collector (6)
 serão disponibilizados, podendo ser consumidos por aplicações como o
 microsserviço Resource Viewer, que (7) apresenta dados ao usuário final.
@@ -94,7 +98,7 @@ conhecimento técnico da ferramenta.
 \section{SHOCK}
 
 O Shock encontra-se disponível em um repositório no
-Gitlab\footnote{\url{https://gitlab.com/DGuedes/shock}}, e o novo microsserviço
+Gitlab\footnote{\url{https://gitlab.com/DGuedes/shock}} e o novo microsserviço
 de processamento de dados pode ser encontrado em um \textit{fork} do serviço
 original\footnote{\url{https://gitlab.com/DGuedes/data-processor}}. O Shock
 abstrai o uso das diferentes ferramentas e pode ser customizado
@@ -199,8 +203,8 @@ de duas estratégias de ingestão disponíveis no Shock.
   Tratamento de dados no Shock via \textit{cast}.
 }]{editaveis/arquivos/store.py}
 
-O segundo estágio de um fluxo de dados é chamado \textit{\textbf{preparo}} e tem o papel
-de ajuste e limpeza dos dados para que sejam utilizados pelos fluxos
+O segundo estágio de um fluxo de dados é chamado \textit{\textbf{preparo}}, e tem
+o papel de ajuste e limpeza dos dados para que sejam utilizados pelos fluxos
 sem maiores complicações. Um exemplo típico é o uso de um estágio de preparo
 que faça \textit{cast} (mudanças nos tipos de dados) de dados, quando valores estão como
 \textit{string} quando são necessários valores \textit{double}. Atualmente,
@@ -256,6 +260,6 @@ em outra. Essa alternativa não precisaria existir caso a publicação via Kafka
 já estivesse disponível no Spark, mas enquanto o lançamento da versão 2.2 não
 ocorre, acaba sendo uma opção válida. Nesse sentido, uma aplicação cliente do
 InterSCity poderia usar o Shock para realizar processamento de seus dados
-seguindo o fluxo de interação da Figura \ref{fig:ligacoes}. Nessa interação, a
-aplicação faz definições no Shock via Kafka, e o Shock apresenta os resultados
+seguindo a interação apresentada na Figura \ref{fig:ligacoes}. Nessa interação, a
+aplicação faz definições no Shock via Kafka, e o Shock retorna os resultados
 pelos estágios de publicação ou por WebSocket.
